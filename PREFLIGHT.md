@@ -1392,72 +1392,324 @@ Run on every PR. Non-deterministic checks (persona quality) use the evaluation c
 
 This gives you ground truth from day one. Expand the reference set as Preflight runs in shadow mode (2d).
 
+## Architect Productivity Features
+
+The six-step pipeline is the core. These features wrap around it to accelerate the full lifecycle — from the moment the business has an idea through board decision to condition follow-up.
+
+### 1. Self-Service Intake Portal
+
+The business submits directly. No email, no Teams message, no hallway conversation that takes 3 meetings to turn into a proper request.
+
+A guided intake form that adapts based on what the personas need:
+
+**Base fields (always):**
+- What do you want? (free text)
+- Why? (business problem, not solution)
+- Who is the business sponsor?
+- Expected users / departments
+- Target go-live
+- Attach any documents you have
+
+**Adaptive fields (appear based on answers):**
+- "Does this involve patient data?" → Yes → data types, volumes, processing purposes (triggers FG, Privacy, CMIO routing)
+- "Does it need to connect to existing systems?" → Yes → which systems, what data flows (triggers Lena, Jan)
+- "Is this a new vendor/product?" → Yes → vendor name, product name, pricing model (triggers Thomas, Nadia, CIO)
+- "Does it involve medical devices or clinical decision support?" → Yes → device class, intended use (triggers CMIO, Nadia for MDR/IVDR)
+
+The form doesn't just collect data — it front-loads Step 0. By the time the architect sees the request, the business has already provided what would otherwise take weeks to extract.
+
+**Language:** NL/EN — requestor selects their language, Preflight stores both.
+
+### 2. Conversational Clarification
+
+Before running the full assessment, Preflight identifies what's missing based on the selected personas' requirements and generates follow-up questions:
+
+```
+Request: "We want Digital Pathology from Sysmex"
+Selected personas: CMIO, Chief, Application, Integration, Data, Security, CISO, ISO, Risk, FG, Privacy
+
+Missing context (per persona):
+  CMIO:    "Will this replace or supplement existing pathology workflows?"
+  Victor:  "Is this cloud-hosted or on-premises? Where is data stored?"
+  Nadia:   "Will patient samples or data cross organizational boundaries?"
+  Thomas:  "Do we already have pathology capabilities in the landscape?"
+  FG-DPO:  "What categories of patient data will be processed? What is the verwerkingsgrondslag?"
+  Lena:    "How will results flow back to the EPD? HL7v2 or FHIR?"
+```
+
+The architect or requestor answers. Then the assessment runs with complete context. This eliminates the "board asks questions → back to research → re-assess" loop.
+
+### 3. Similar Past Assessments
+
+When a new request comes in, Preflight searches previous assessments by semantic similarity and shows:
+
+- Similar proposals with match score
+- Board decision (approved / conditional / rejected)
+- Conditions that were set
+- Which conditions are still open
+- Key findings that may carry forward
+
+Uses the same Milvus embedding infrastructure — assessments are embedded and indexed alongside the knowledge base.
+
+The architect doesn't start from scratch. If the hospital assessed a Sysmex product last year, or a similar pathology solution from a competitor, that context carries forward. Marcus (Chief) can reference prior decisions for consistency.
+
+### 4. Condition Tracking & Follow-Up
+
+Every approved assessment creates condition records. Today those live in meeting minutes, email, and memory. Preflight owns the register:
+
+| Field | Purpose |
+|-------|---------|
+| Condition | What must be done (from persona's conditions for approval) |
+| Source persona | Who raised it (e.g., "Victor: complete STRIDE threat model") |
+| Source assessment | Linked to the PSA that created it |
+| Owner | Who is responsible for fulfilling it |
+| Due date | When it must be completed |
+| Status | Open / in progress / completed / overdue / waived |
+| Evidence | How completion is demonstrated (document link, sign-off) |
+
+**Dashboard features:**
+- Overdue conditions highlighted
+- Notifications approaching due dates (7 days, 1 day)
+- Per-assessment condition status (all conditions met → assessment fully cleared)
+- Per-owner condition workload
+- Board view: which assessments still have open conditions?
+- Trend: are conditions being closed on time or accumulating?
+
+### 5. Delta Re-Assessment
+
+When a proposal changes after board feedback, the architect marks what changed. Preflight diffs and only re-evaluates affected personas:
+
+```
+Change: "Vendor changed hosting from US to EU"
+  Affected: Nadia (data residency resolved), Victor (different threat landscape), FG (doorgifte assessment changes)
+  Unaffected: Thomas, Lena, Sophie, CMIO, Jan — their assessments carry forward
+
+Change: "Added FHIR interface to EPD"
+  Affected: Lena (new integration), CMIO (clinical interop), Victor (new attack surface)
+  Unaffected: CIO, Sophie, Nadia (no regulatory change)
+```
+
+Version history:
+- v1 → v2: what changed, which personas re-assessed, what's different in the output
+- Full diff view: old assessment vs. new, per persona
+- Board sees: "v2 addresses conditions 1 and 3 from the board's v1 feedback"
+
+### 6. Quick Scan / Pre-Screening
+
+A 30-second lightweight check before committing to a full assessment. Single LLM call, light tier:
+
+```
+Input: "SaaS tool for employee satisfaction surveys, no patient data, 50 users, €5k/year"
+Output:
+  Classification: new-application (low impact)
+  Quick assessment: Standard SaaS, no clinical data, no integration complexity
+  Recommended treatment: Fast-track candidate
+  Full Preflight: Optional — only if architect wants deeper analysis
+  Estimated full assessment time: ~2 minutes
+```
+
+```
+Input: "AI-powered radiology triage system from startup vendor"
+Output:
+  Classification: clinical-system + ai-ml (critical impact)
+  Quick assessment: Patient data, clinical decision support, EU AI Act high-risk, MDR/SaMD likely
+  Recommended treatment: Full Preflight mandatory, deep review expected
+  Key risks (preview): SaMD classification, clinical validation, vendor viability, exit strategy
+  Estimated full assessment time: ~5 minutes (deep mode with interaction rounds)
+```
+
+The architect knows immediately whether this is a 5-minute or 5-day effort. Trivial requests don't consume full pipeline resources.
+
+### 7. Board Preparation Pack
+
+Per board meeting, Preflight generates a complete meeting package:
+
+**Meeting Overview:**
+- Number of proposals on the agenda
+- Total estimated board time
+- High-risk items flagged (any BIV=3 or veto/escalation)
+
+**Per Agenda Item:**
+- One-paragraph executive summary (CIO-readable, no jargon)
+- BIV classification with traffic light (red/amber/green)
+- Top 3 risks (from persona assessments, with severity)
+- Recommended board time (15 min / 30 min / full session)
+- Pre-read materials linked
+- Decision options: approve / approve with conditions / reject / defer
+- Draft conditions (pre-filled from persona assessments, board edits and confirms)
+- Related past decisions (from Similar Past Assessments)
+
+**Post-Meeting:**
+- Board decisions recorded per agenda item
+- Conditions finalized and entered into tracking (Feature 4)
+- Assessment status updated (approved / rejected / deferred)
+- Audit trail updated with board-chair confirmation
+
+### 8. Vendor Intelligence
+
+When a vendor is mentioned in a request, Preflight auto-pulls a vendor profile:
+
+| Data Point | Source |
+|-----------|--------|
+| Previous assessments involving this vendor | Preflight assessment history |
+| Previous board decisions for this vendor | Condition tracking |
+| AIVG compliance status | Nadia's assessment history |
+| NEN 7510 / ISO 27001 certification status | Last known from vendor assessment |
+| Verwerkersovereenkomst status | FG/Privacy records |
+| Known issues / open conditions | Condition tracking |
+| Vendor viability signals | Thomas's previous assessments |
+| Number of systems from this vendor in landscape | ArchiMate model |
+
+The architect walks into the assessment already knowing the hospital's full history with this vendor. Nadia sees immediately whether the AIVG basics are already covered or need fresh assessment.
+
+Vendor profiles are cumulative — each assessment adds to the profile. Over time, this becomes the hospital's vendor knowledge base.
+
+### 9. Architecture Debt Register
+
+Every assessment identifies debt. Where the assessment says "this creates coupling that should be resolved" or "legacy system X should be decommissioned to make room" — that's debt. Preflight captures it:
+
+| Field | Purpose |
+|-------|---------|
+| Debt item | Description of the architectural debt |
+| Source assessment | Which PSA identified it |
+| Source persona | Who flagged it (e.g., Thomas: "portfolio overlap with Lab360") |
+| ArchiMate element | Linked to specific element in the model |
+| Category | Technical debt / integration debt / security debt / compliance debt / portfolio debt |
+| Priority | High / medium / low (based on BIV impact) |
+| Estimated effort | T-shirt size from the flagging persona |
+| Owner | Assigned architect or team |
+| Status | Identified / planned / in progress / resolved |
+
+**Dashboard:**
+- Total debt by category — is it growing or shrinking?
+- Debt heat map on the ArchiMate capability model — where is debt concentrated?
+- Debt per domain architect — who owns the most?
+- Debt created vs. resolved over time
+- Board view: strategic debt decisions needed
+
+Feeds into Marcus (Chief Architect) for architecture roadmap decisions. When a new proposal comes in, Preflight cross-references: "This proposal would resolve debt item #47 (Lab360 decommission) but creates new debt item #102 (point-to-point integration)."
+
+### 10. Natural Language Query
+
+A query interface over everything Preflight knows:
+
+```
+"Show me all assessments Victor blocked in the last 6 months"
+"What's our current BIV distribution?"
+"Which vendor has the most open conditions?"
+"How many proposals are waiting for board review?"
+"What architecture debt is linked to the EPD?"
+"List all DPIAs completed this year"
+"Which ZiRA bedrijfsfuncties have the most assessments?"
+"Show me fast-tracked assessments where the board later found issues"
+```
+
+Uses the light LLM tier to translate natural language to structured queries over the assessment database, condition register, debt register, and audit trail. Results rendered in the dashboard.
+
+Available to all roles (scoped by RBAC — a requestor can only query their own submissions, the CIO sees everything).
+
 ## Build Phases
 
 Each phase gets a Preflight assessment before starting. The personas evaluate the phase scope, technology choices, and risk profile — the same way they'd evaluate any business request.
 
 ### Phase 1 — Core (weeks 1-2)
 
-**Preflight assessment of Phase 1:** Run the phase plan through fast-mode personas. Key questions: Does the FastAPI choice fit the tech radar? Is the NIM deployment architecture sound? What's the minimum viable security posture for a tool that will ingest vendor documents?
+**Preflight assessment of Phase 1:** Run the phase plan through fast-mode personas.
 
 Build:
 - FastAPI service with request intake endpoint
-- Nemotron NIM deployment
+- LLM deployment (model TBD)
 - Load personas from `ea-council-personas.mjs`
 - Step 1: classification + `selectRelevant()` routing
 - Step 3 fast mode: batched PERSPECTIVES single-call assessment
-- Step 5: Markdown output with persona-attributed findings
+- Step 5: Markdown output with persona-attributed findings (PSA + ADR)
 - Manual knowledge base (embedded once, no CI yet)
+- **Quick Scan** (Feature 6): lightweight pre-screening before full assessment
+- Basic Entra ID authentication
 
 ### Phase 2 — Grounded (weeks 3-4)
 
-**Preflight assessment of Phase 2:** Deep-mode panel on ArchiMate and TOPdesk integration design. Victor reviews auth and secret handling. Lena reviews API patterns. Nadia reviews data processing implications of querying enterprise systems.
+**Preflight assessment of Phase 2:** Deep-mode panel on integration design. Victor reviews auth/secrets. Lena reviews API patterns. FG reviews data processing implications.
 
 Build:
 - ArchiMate model parser (persona-driven landscape queries in Step 0)
 - TOPdesk REST integration (persona-driven queries in Step 0)
+- SharePoint/OneDrive integration (Microsoft Graph)
+- Document parsing pipeline (Unstructured workhorse + LlamaParse smart)
 - `injectLandscapeContext()` pipeline
 - RAG pipeline with Milvus (persona-scoped retrieval in Step 2)
+- Embedding pipeline (Voyage-3-Large, BGE-M3, dual Milvus collections)
 - Triage-based output formats (fast-track / standard / deep)
-- `determineTriageLevel()` with veto/escalation logic
+- `determineTriageLevel()` with veto/escalation/FG determination logic
+- **Self-Service Intake Portal** (Feature 1): guided form with adaptive fields
+- **Conversational Clarification** (Feature 2): persona-driven follow-up questions
+- RBAC/ABAC authorization (OAuth 2.1)
+- Audit trail (append-only PostgreSQL, hash chain)
+- BIV classification in output
 
 ### Phase 3 — Deep (weeks 5-6)
 
-**Preflight assessment of Phase 3:** The simulatePanel() integration means Preflight now makes multiple sequential LLM calls per assessment. Jan reviews compute cost and scaling. CIO reviews whether the deep mode cost is justified by the value. Raven stress-tests: what if interaction rounds produce garbage?
+**Preflight assessment of Phase 3:** Jan reviews compute cost for simulatePanel(). CIO reviews deep mode cost justification. Raven stress-tests: what if interaction rounds produce garbage?
 
 Build:
 - Step 3 deep mode: `simulatePanel()` integration for high-impact proposals
 - Interaction rounds (personas react to each other's positions)
-- Step 4: Security veto + Risk escalation + Red Team pre-mortem chain
+- Step 4: FG determination + Security veto + Risk escalation + Red Team pre-mortem chain
 - NeMo Guardrails integration
 - Knowledge base CI (re-index on merge)
-- Teams Adaptive Card output format
+- All 8 architecture products with bilingual templates (PSA, ADR, DPIA, BIA, vendor, integration, security, tech radar)
+- **Similar Past Assessments** (Feature 3): semantic search over assessment history
+- **Delta Re-Assessment** (Feature 5): diff-based partial re-evaluation
+- **Vendor Intelligence** (Feature 8): cumulative vendor profiles
+- SIEM integration (CEF/syslog)
+- NEN 7513 compliance logging
+- Shadow mode testing (Tier 2d)
 
-### Phase 4 — Learn (ongoing)
-
-**Preflight assessment of Phase 4:** Aisha reviews the feedback data model — what are we storing about board members' assessments? Nadia checks if tracking per-persona accuracy creates governance issues. Victor reviews whether feedback data could be used to game the system.
+### Phase 4 — Accelerate (weeks 7-8)
 
 Build:
-- Feedback capture: board can mark each persona's finding as "useful / missed the point / wrong"
-- Per-persona accuracy tracking — which personas consistently add value vs. noise?
-- Tune persona incentives/constraints based on where they consistently miss
-- Track hit rate: how often does the board agree with Preflight's triage?
-- Track veto accuracy: when Victor blocks, does the board agree?
+- **Condition Tracking** (Feature 4): register, dashboard, notifications, evidence
+- **Board Preparation Pack** (Feature 7): meeting packages, decision recording
+- **Architecture Debt Register** (Feature 9): debt tracking linked to ArchiMate
+- Next.js frontend with full bilingual UI
+- Compliance dashboard (audit trail, hash verification, NEN 7513 reports)
+- Feedback capture: board marks each persona's finding as useful / missed / wrong
+
+### Phase 5 — Learn (ongoing)
+
+Build:
+- Per-persona accuracy tracking — which personas add value vs. noise?
+- Tune persona incentives/constraints based on feedback
+- Track hit rate: board agreement with Preflight triage
+- Track veto/FG determination accuracy
+- BIV distribution monitoring (inflation/leniency detection)
+- **Natural Language Query** (Feature 10): query interface over all Preflight data
+- Stale knowledge detection and alerting
 - Expand knowledge base based on recurring gaps
+- Reference scenario benchmark maintenance
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Time from business request to first structured assessment | < 5 minutes (vs. days/weeks today) |
-| Board prep time per proposal | Reduced by 60%+ |
-| Requests resolved without full board session | 40%+ (via fast-track and early reject) |
-| Persona coverage per review | 100% of relevant domain lenses consulted |
-| Board agreement with Preflight triage | >80% |
-| Board agreement with Preflight recommendation | >70% |
-| Veto accuracy (board agrees with Victor's blocks) | >90% |
-| Per-persona usefulness (board marks findings as useful) | >70% per persona |
-| Adoption | Architects voluntarily use it (not mandated) |
+| Category | Metric | Target |
+|----------|--------|--------|
+| **Speed** | Time from business request to first structured assessment | < 5 minutes (vs. days/weeks today) |
+| **Speed** | Time from intake to board-ready package | < 1 day (vs. weeks today) |
+| **Speed** | Board prep time per proposal | Reduced by 60%+ |
+| **Efficiency** | Requests resolved without full board session | 40%+ (via fast-track and early reject) |
+| **Efficiency** | Re-assessments using delta mode (vs. full re-run) | >70% |
+| **Quality** | Persona coverage per review | 100% of relevant domain lenses consulted |
+| **Quality** | Board agreement with Preflight triage | >80% |
+| **Quality** | Board agreement with Preflight recommendation | >70% |
+| **Quality** | Veto/FG determination accuracy (board agrees) | >90% |
+| **Quality** | Per-persona usefulness (board marks findings useful) | >70% per persona |
+| **Quality** | False fast-track rate | <5% |
+| **Intake** | Business self-service submission rate (vs. architect-mediated) | >50% after 3 months |
+| **Intake** | Clarification questions answered before first assessment run | >80% |
+| **Follow-up** | Conditions tracked in Preflight (vs. external) | >90% |
+| **Follow-up** | Conditions closed on time | >75% |
+| **Follow-up** | Architecture debt items with assigned owners | >80% |
+| **Adoption** | Architects voluntarily use it (not mandated) | Yes |
+| **Adoption** | Board members use prep packs (vs. reading raw PSA) | >80% |
 
 ## Estimated Footprint
 
@@ -1548,9 +1800,15 @@ preflight/
 │   └── src/
 │       ├── app/                       # Next.js app router
 │       │   ├── [locale]/              # NL/EN bilingual routes
-│       │   ├── assessments/           # Assessment list, detail, history
-│       │   ├── intake/                # New request intake form
-│       │   └── dashboard/             # Overview, metrics, recent assessments
+│       │   ├── intake/                # Self-service intake portal (Feature 1)
+│       │   ├── assessments/           # Assessment list, detail, diff, history
+│       │   ├── board/                 # Board prep packs, decision recording (Feature 7)
+│       │   ├── conditions/            # Condition tracking dashboard (Feature 4)
+│       │   ├── vendors/               # Vendor intelligence profiles (Feature 8)
+│       │   ├── debt/                  # Architecture debt register (Feature 9)
+│       │   ├── compliance/            # Audit trail, NEN 7513 reports, SIEM
+│       │   ├── query/                 # Natural language query (Feature 10)
+│       │   └── dashboard/             # Overview, metrics, BIV distribution
 │       └── components/                # Shared UI components
 ├── tests/
 │   └── scenarios/                     # Test proposals (Digital Pathology, etc.)
