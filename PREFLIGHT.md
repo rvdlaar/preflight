@@ -1172,6 +1172,226 @@ Things you'd miss without the personas reviewing your own work:
 
 This is not overhead. This is the tool proving it works by using itself.
 
+## Testing & Validation Strategy
+
+Preflight has two fundamentally different types of components. Testing them the same way is a category error.
+
+### Tier 1: Deterministic Components — Standard Testing
+
+These either work or they don't. Traditional unit/integration tests.
+
+| Component | Test Type | What's Tested | Failure = |
+|-----------|-----------|---------------|-----------|
+| **Routing logic** | Unit | `selectRelevant('clinical-system')` returns correct 12 personas | Wrong personas consulted |
+| **ABAC policies** | Unit | Patient data classification → access restricted to clinical-access roles | Data exposure |
+| **RBAC enforcement** | Integration | Each role can only perform allowed actions | Unauthorized access |
+| **Audit trail** | Integration | Every event logged, hash chain valid, append-only enforced | Compliance failure |
+| **ArchiMate parser** | Unit | Elements, relationships, properties extracted correctly from .archimate XML | Wrong landscape context |
+| **TOPdesk client** | Integration | CI queries return expected structure, error handling works | Missing CMDB data |
+| **Microsoft Graph** | Integration | SharePoint/OneDrive file retrieval, auth token refresh | Document ingestion fails |
+| **Document parsing router** | Unit | File type → correct parser selected, fallback chain works | Wrong parser, silent failure |
+| **MarkItDown** | Unit | DOCX/PPTX/XLSX → clean Markdown with headers/tables preserved | Incomplete extraction |
+| **PyMuPDF** | Unit | Digital PDF → text with tables, page numbers annotated | Missing content |
+| **Embedding chunkers** | Unit | ArchiMate → object-based chunks, vendor docs → hierarchical, ZiRA → LLM-prefixed | Wrong chunk boundaries |
+| **Milvus indexing** | Integration | Dense + sparse collections populated, metadata correct, hybrid search returns results | Retrieval fails |
+| **BIV scoring aggregation** | Unit | Highest score per dimension wins, triggers correct RPO/RTO/policies | Wrong risk classification |
+| **Triage logic** | Unit | `determineTriageLevel()` maps ratings to correct board treatment | Wrong board routing |
+| **Product selection** | Unit | Proposal triggers → correct products generated (DPIA when patient data, BIA when critical) | Missing products |
+| **i18n** | Unit | All templates render in NL and EN, ZiRA terms preserved in Dutch | Broken output |
+| **NEN 7513 logging** | Integration | Access to patient-related assessments logged with all required fields | Audit non-conformance |
+| **SIEM export** | Integration | Security events stream in CEF format, parseable by SIEM | Blind spot in monitoring |
+
+### Tier 2: Non-Deterministic Components — Evaluation, Not Testing
+
+Persona outputs, assessment quality, and triage accuracy cannot be unit tested. They need **evaluation frameworks** — structured ways to measure quality over time.
+
+#### 2a. Persona Quality Evaluation
+
+**Problem:** How do you know Victor's threat assessment is actually good?
+
+**Fix: Reference Scenario Benchmark**
+
+Create 10-15 reference scenarios with **known expert assessments** — real proposals that real architects have already assessed. These are the ground truth.
+
+| Scenario | Type | Key Issues a Good Assessment Must Find |
+|----------|------|---------------------------------------|
+| Digital Pathology (Sysmex) | clinical-system | Patient data (V=3), IVDR/MDR classification, Cloverleaf integration, PACS dependency, FHIR gap |
+| Cloud-hosted HR system | new-application | Personal employee data (AVG), hosting outside EER risk, Entra ID SSO requirement |
+| Lab system upgrade | infrastructure-change | B=3 (lab results critical), cascade to EPD, downtime window constraints |
+| AI diagnostic tool | ai-ml + clinical | EU AI Act high-risk classification, clinical validation requirement, SaMD/IEC 62304 |
+| Vendor SaaS analytics | vendor-selection | AIVG Module ICT compliance, exit-clausule, broncode escrow, NEN 7510 certification |
+
+For each scenario, run Preflight and evaluate:
+
+```
+For each persona in the assessment:
+  □ Did they identify the key issues for their domain? (completeness)
+  □ Are their findings factually correct? (accuracy)
+  □ Did they reference the right standards/regulations? (grounding)
+  □ Are their conditions for approval actionable? (usefulness)
+  □ Did they miss anything a real architect would catch? (blind spots)
+```
+
+Score: 1-5 per dimension. Track over time. When prompts are tuned, re-run the benchmark to detect **persona drift**.
+
+**Who evaluates:** Real architects and domain experts. Not automated. This is the feedback loop — Phase 4 (Learn) is not optional, it's the testing strategy.
+
+#### 2b. Retrieval Quality Evaluation
+
+**Problem:** The most dangerous failure — persona reasons confidently about wrong context because retrieval returned irrelevant chunks.
+
+**Fix: Retrieval Relevance Testing**
+
+For each reference scenario, define the **expected knowledge chunks** that should be retrieved per persona:
+
+```
+Scenario: Digital Pathology (Sysmex)
+  Victor (Security) should retrieve:
+    ✓ NEN 7510 A.14 — system acquisition security
+    ✓ STRIDE threat model template
+    ✓ Hospital security baseline for clinical systems
+    ✗ Should NOT retrieve: NEN 7512 (not a data exchange scenario)
+
+  Nadia (Risk) should retrieve:
+    ✓ AIVG Module ICT — SaaS clauses
+    ✓ MDR/IVDR software classification
+    ✓ NEN 7510 certification requirement
+    ✗ Should NOT retrieve: IEC 62443 (not OT)
+```
+
+Automate this: after retrieval (Step 2), log which chunks were retrieved per persona. Compare against expected set. Alert on:
+- **Missing expected chunks** (retrieval failure → persona lacks critical context)
+- **Irrelevant chunks retrieved** (noise → persona may reason about wrong context)
+- **Cross-contamination** (Victor gets Lena's integration patterns instead of security controls)
+
+This is testable and automatable — it's the bridge between deterministic and non-deterministic testing.
+
+#### 2c. BIV Inflation Detection
+
+**Problem:** If personas default to "high" for safety, everything gets deep review, fast-track never works, board gets flooded.
+
+**Fix: Distribution Monitoring**
+
+Track BIV score distribution across all assessments:
+
+```
+Expected healthy distribution (after sufficient volume):
+  B: ~20% Hoog, ~50% Midden, ~30% Laag
+  I: ~15% Hoog, ~45% Midden, ~40% Laag
+  V: ~30% Hoog, ~40% Midden, ~30% Laag (skewed high because hospital = patient data)
+
+Alert if:
+  Any dimension > 60% Hoog → conservative bias, personas need recalibration
+  Any dimension > 60% Laag → dangerous leniency, review immediately
+  Board treatment > 70% deep-review → system is a bottleneck, not an accelerator
+  Board treatment < 10% deep-review → system is too permissive
+```
+
+Also track: **board override rate**. If the board frequently downgrades deep-review to standard-review, the BIV is inflated. If they frequently upgrade fast-track to standard-review, the BIV is too lenient.
+
+#### 2d. Triage Accuracy — The Most Dangerous Metric
+
+**Problem:** Fast-track misclassifies high-risk as low-risk. The board never sees it.
+
+**Fix: Shadow Assessment**
+
+For the first 3 months (Phase 4), run Preflight in **shadow mode** alongside the existing manual process:
+
+1. Architect submits proposal through normal channels AND through Preflight
+2. Preflight produces its assessment and triage recommendation
+3. The real board makes its decision through the existing process (blind to Preflight's output)
+4. Compare: did Preflight's triage match the board's actual treatment?
+
+Track:
+
+| Metric | Formula | Target | Danger Zone |
+|--------|---------|--------|-------------|
+| Triage agreement | Preflight triage == board treatment | >80% | <60% |
+| False fast-track rate | Preflight said fast-track, board said deep-review | <5% | >10% |
+| False deep-review rate | Preflight said deep-review, board said fast-track | <20% | >40% |
+| Classification accuracy | Preflight type == architect's type | >90% | <75% |
+| Persona selection accuracy | Preflight's selected personas ⊇ board's consulted domains | >85% | <70% |
+
+**False fast-track is the critical metric.** A false deep-review wastes time. A false fast-track misses risk. Calibrate for false-fast-track < 5% even if it means more false deep-reviews.
+
+#### 2e. Stale Knowledge Detection
+
+**Problem:** Knowledge base becomes outdated. Nadia references superseded NEN controls. Marcus evaluates against a ZiRA version that's been replaced by ZaRA.
+
+**Fix: Knowledge Freshness Monitoring**
+
+| Knowledge Type | Freshness Check | Frequency |
+|---------------|-----------------|-----------|
+| ZiRA/ZaRA | Compare embedded version against Nictiz GitHub releases | Weekly |
+| NEN standards | Check NEN.nl for updates to 7510/7512/7513/7516/7517 | Monthly |
+| AIVG | Check Nevi for module updates | Quarterly |
+| ArchiMate model | Compare embedded .archimate hash against SharePoint version | On every assessment (real-time) |
+| TOPdesk CMDB | CI relationship count delta — alert if >10% change since last index | Weekly |
+| Tech radar | Compare against last known version in SharePoint | On every assessment |
+| Hospital policies | Check SharePoint modified dates against embedding dates | Weekly |
+
+Alert when embedded knowledge is older than the source. Block assessment if critical knowledge (ArchiMate model, NEN 7510) is stale — "Preflight's knowledge base is outdated. Re-index before running assessments."
+
+#### 2f. Silent Parser Failure Detection
+
+**Problem:** Parser extracts 60% of a vendor contract. Persona assesses incomplete information. Output looks fine.
+
+**Fix: Completeness Heuristics**
+
+After parsing, before feeding to personas:
+
+```python
+def validate_parse_quality(original_file, parsed_markdown):
+    # Page count check: parsed pages ≈ original pages
+    if parsed_page_count < original_page_count * 0.8:
+        flag("Parser may have missed pages")
+    
+    # Size ratio: parsed markdown should be proportional to original
+    if len(parsed_markdown) < original_file_size * 0.1:
+        flag("Parsed output suspiciously small")
+    
+    # Table detection: if original has tables, parsed should too
+    if original_has_tables and not parsed_has_tables:
+        flag("Tables may not have been extracted")
+    
+    # Section header continuity: check for numbering gaps
+    # "1. ... 2. ... 4. ..." → section 3 was lost
+    if has_numbering_gaps(parsed_markdown):
+        flag("Section numbering gap — content may be missing")
+    
+    # For AIVG/contracts: check for expected article numbers
+    if is_contract and not has_expected_articles(parsed_markdown):
+        flag("Contract parsing incomplete — expected articles missing")
+```
+
+Flag, don't block. The architect sees: "⚠ Parser confidence: 72% — 3 potential issues detected. Review source document before relying on this assessment."
+
+### Tier 3: End-to-End Scenario Tests
+
+Full pipeline tests using the reference scenarios from 2a. Run the complete pipeline (Steps 0-5) and validate:
+
+1. **Step 0**: Landscape brief generated, correct ArchiMate elements found, correct TOPdesk CIs found
+2. **Step 1**: Classification correct, correct personas selected
+3. **Step 2**: Retrieval returns expected knowledge chunks (from 2b)
+4. **Step 3**: Assessment covers all required domain lenses, BIV scored
+5. **Step 4**: Veto/escalation/FG triggers where expected
+6. **Step 5**: Correct products generated, triage matches expected, bilingual output renders
+
+Run on every PR. Non-deterministic checks (persona quality) use the evaluation criteria from 2a, not exact string matching.
+
+### Test Data: The Bootstrap Problem
+
+**Problem:** You need reference scenarios to test, but Preflight hasn't run yet.
+
+**Fix:** Seed with 5 real proposals from the hospital's recent history — proposals that went through the real board, with known outcomes. Work backwards:
+
+1. Take a real board decision (e.g., "Digital Pathology approved with conditions X, Y, Z")
+2. Feed the original proposal through Preflight
+3. Compare Preflight's output against the real board decision
+4. The delta is your calibration target
+
+This gives you ground truth from day one. Expand the reference set as Preflight runs in shadow mode (2d).
+
 ## Build Phases
 
 Each phase gets a Preflight assessment before starting. The personas evaluate the phase scope, technology choices, and risk profile — the same way they'd evaluate any business request.
