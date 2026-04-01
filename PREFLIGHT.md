@@ -8,7 +8,7 @@ An EA intake and pre-assessment tool that does the analytical homework — from 
 
 ## What It Is
 
-Preflight takes a business request — as raw as "we want Digital Pathology from Sysmex" — and runs it through 13 MiroFish personas representing the full EA board: CIO, CMIO, Chief Architect, 7 domain architects, Security (veto), Risk & Compliance (escalation), and Red Team. The personas don't just evaluate — they drive every step of the pipeline: what to look up, what to retrieve, what to flag, how to assess, where to challenge.
+Preflight takes a business request — as raw as "we want Digital Pathology from Sysmex" — and runs it through 17 MiroFish personas representing the full EA board plus security, privacy, and compliance officers: CIO, CMIO, Chief Architect, 7 domain architects, Security (veto), CISO, ISO, Risk & Compliance (escalation), FG/DPO (independent — cannot be overruled), Privacy Officer, and Red Team. The personas don't just evaluate — they drive every step of the pipeline: what to look up, what to retrieve, what to flag, how to assess, where to challenge.
 
 The architect reviews, adjusts, adds judgment, and brings a strong package to the board — or fast-tracks it without a board session at all.
 
@@ -34,14 +34,14 @@ The cycle time from business request to architectural decision is weeks to month
 
 ## Core Concept: Persona-Driven Pipeline
 
-The 13 MiroFish personas are not bolted onto Step 3. They are the pipeline. Every step is shaped by what the relevant personas would ask, look for, flag, and challenge.
+The 17 MiroFish personas are not bolted onto Step 3. They are the pipeline. Every step is shaped by what the relevant personas would ask, look for, flag, and challenge.
 
 ```
 ┌───────────────────────────────────────────────────────────┐
 │                        PREFLIGHT                           │
 │                                                           │
 │  Personas loaded: ea-council-personas.mjs                 │
-│  13 roles × 6 fields (role, name, incentives,             │
+│  17 roles × 6 fields (role, name, incentives,             │
 │  constraints, domain, history)                            │
 │                                                           │
 │  ┌───────────┐  Personas ask:                             │
@@ -105,7 +105,11 @@ Defined in `personas/ea-council-personas.mjs`. Compatible with OpenClaw's `simul
 | Manufacturing & OT | Erik | Domain | Production continuity, IEC 62443 |
 | R&D & Engineering Design | Petra | Domain | IP protection, export control |
 | Security Architecture | Victor | Cross-cut | **VETO power** |
+| CISO | CISO | Cross-cut | Strategic security risk acceptance |
+| Information Security Officer | ISO-Officer | Cross-cut | NEN 7510 ISMS, operational security |
 | Risk & Compliance | Nadia | Cross-cut | **ESCALATION power** |
+| FG / Data Protection Officer | FG-DPO | Cross-cut | **INDEPENDENT — cannot be overruled** |
+| Privacy Officer | PO | Cross-cut | Privacy by design, DPIA execution |
 | Red Team | Raven | Cross-cut | Challenge only |
 
 Each persona carries: `role`, `name`, `incentives`, `constraints`, `domain`, `history` (injected at runtime with landscape data).
@@ -166,7 +170,7 @@ Behind each client: NIM endpoint, Ollama, or external API. The pipeline doesn't 
 | Document parsing | Tiered parsing pipeline (see below) | PDF, DOCX, PPTX, XLSX, scanned docs extraction |
 | AuthN | Microsoft Entra ID (OIDC) | SSO, identity verification, integrates with hospital identity provider |
 | AuthZ | OAuth 2.1 + RBAC/ABAC policy engine | Token-based authorization with role and attribute policies |
-| Audit trail | Append-only log (PostgreSQL) | Immutable record of every assessment and access decision (NEN 7513) |
+| Audit trail | Append-only log (PostgreSQL) + SIEM integration | Immutable record of every assessment, access decision, and system event |
 | **Frontend** | | |
 | Web UI | Next.js + shadcn/ui + Tailwind | Architect-facing interface — bilingual NL/EN |
 | Design system | UI UX Pro Max | Design system generation (colors, typography, patterns, style) |
@@ -237,7 +241,114 @@ Every authorization decision is logged per NEN 7513 requirements:
 - **Welke autorisatie**: which role + which ABAC policy applied
 - **Waarom**: access justification (derived from role assignment + request context)
 
-Logs are append-only, tamper-proof, retained per hospital retention policy (minimum as defined by NEN 7513). Accessible only to `compliance-officer` and `fg-dpo` roles.
+Logs are append-only, tamper-proof, retained per hospital retention policy. Accessible only to `compliance-officer` and `fg-dpo` roles.
+
+### Audit Trail & Compliance Logging
+
+Preflight operates in a regulated environment. The audit trail isn't just a log — it's a compliance instrument that serves multiple regulatory frameworks simultaneously.
+
+**Regulatory requirements driving the audit trail:**
+
+| Framework | What it requires from Preflight |
+|-----------|--------------------------------|
+| **NEN 7513** | Log all access to patient-related data: who, what, when, from where, which authorization. Tamper-proof, auditable, retained per hospital policy. |
+| **NIS2** | As a system supporting essential services (healthcare), Preflight must: log security-relevant events, support incident detection, enable forensic analysis, report significant incidents within 24h/72h. |
+| **MDR (Medical Device Regulation)** | If Preflight assesses proposals involving medical device software (SaMD, IEC 62304 Class B/C), the assessment itself becomes part of the device's quality documentation trail. Traceability from requirement through assessment to decision. |
+| **AVG/GDPR** | Log processing activities involving personal data. Demonstrate accountability (verantwoordingsplicht). Support data subject access requests (inzageverzoeken). |
+| **SOC 2 (Type II)** | If Preflight becomes a shared service: demonstrate continuous control effectiveness over security, availability, processing integrity, confidentiality, and privacy. Requires structured, queryable audit evidence. |
+| **SIEM integration** | Security events from Preflight must flow to the hospital's SIEM for correlation with other systems. Failed auth attempts, unauthorized access, data classification events, policy violations. |
+
+**What gets logged:**
+
+| Event Category | Events | Required by |
+|---------------|--------|-------------|
+| **Authentication** | Login success/failure, token refresh, session start/end | NIS2, SOC 2, SIEM |
+| **Authorization** | Access granted/denied, ABAC policy triggered, role check result | NEN 7513, NIS2, SOC 2, SIEM |
+| **Assessment lifecycle** | Created, classified, personas selected, assessment started/completed, triage determined | MDR, SOC 2 |
+| **Persona output** | Each persona's rating and findings (immutable once generated) | MDR (traceability) |
+| **Veto/escalation** | Victor blocks, Nadia escalates, Red Team triggered | MDR, SOC 2 |
+| **Data classification** | Aisha classifies data as patient/personal/confidential → triggers ABAC policy | NEN 7513, AVG |
+| **Document access** | Which documents were ingested, parsed, embedded — per assessment | NEN 7513 (if patient data), AVG |
+| **Board decisions** | Assessment approved/rejected/conditions set by board | MDR, SOC 2 |
+| **Architect overrides** | Persona recommendation overridden with rationale | MDR (traceability), SOC 2 |
+| **System events** | LLM calls (which tier, latency, token count), parsing failures, embedding errors | NIS2, SOC 2, SIEM |
+| **Configuration changes** | Persona updates, knowledge base changes, policy changes, role assignments | NIS2, SOC 2, SIEM |
+
+**Audit log schema:**
+
+```sql
+CREATE TABLE audit_log (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    timestamp       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    event_type      TEXT NOT NULL,        -- auth, authz, assessment, persona, veto, data_classification, ...
+    action          TEXT NOT NULL,        -- created, accessed, denied, overridden, ...
+    actor_id        TEXT NOT NULL,        -- Entra ID user principal
+    actor_role      TEXT NOT NULL,        -- RBAC role at time of action
+    resource_type   TEXT,                 -- assessment, document, persona, config
+    resource_id     UUID,                 -- ID of the affected resource
+    assessment_id   UUID,                 -- links to parent assessment (if applicable)
+    details         JSONB,               -- event-specific payload (findings, rationale, policy applied)
+    classification  TEXT,                 -- public, confidential, patient-data
+    source_ip       INET,
+    user_agent      TEXT,
+    
+    -- Tamper protection
+    previous_hash   TEXT,                 -- SHA-256 of previous log entry (hash chain)
+    entry_hash      TEXT NOT NULL         -- SHA-256 of this entry (computed from all fields + previous_hash)
+);
+
+-- Append-only: no UPDATE or DELETE allowed
+-- Enforced via PostgreSQL RLS + revoked permissions
+-- Hash chain enables tamper detection at query time
+```
+
+**Tamper protection:** Each log entry includes a SHA-256 hash of the previous entry, forming a hash chain. Verification queries can detect any modification or deletion. PostgreSQL Row-Level Security + revoked UPDATE/DELETE permissions enforce append-only at the database level.
+
+**Retention:** Configurable per event category. Default minimum per regulatory requirement:
+- NEN 7513 access logs: per hospital retention policy (typically 5 years)
+- MDR assessment trails: lifetime of the medical device + 10 years
+- NIS2 security events: minimum 18 months
+- AVG processing logs: as long as processing continues + demonstration period
+
+**SIEM Integration:**
+
+Security-relevant events stream to the hospital's SIEM in real-time:
+
+```
+Preflight audit log
+    │
+    ├── Security events → SIEM (real-time via syslog/CEF or webhook)
+    │   - Failed authentication
+    │   - Unauthorized access attempts
+    │   - Data classification changes
+    │   - Configuration changes
+    │   - System errors / parsing failures
+    │
+    └── All events → PostgreSQL (append-only, hash-chained)
+        - Full audit trail for compliance queries
+        - Accessible via compliance dashboard
+```
+
+The SIEM receives structured events in CEF (Common Event Format) or syslog format, compatible with whatever the hospital runs (Splunk, Microsoft Sentinel, QRadar, etc.). Preflight doesn't need to know which SIEM — it pushes to a standard format.
+
+**SOC 2 readiness:**
+
+If Preflight is operated as a shared service (multiple hospitals or departments), the audit trail provides the evidence base for SOC 2 Type II:
+- **Security**: auth events, access control enforcement, SIEM integration
+- **Availability**: system event monitoring, uptime tracking
+- **Processing integrity**: assessment lifecycle tracking, persona output immutability, hash chain verification
+- **Confidentiality**: data classification enforcement, ABAC policy logs
+- **Privacy**: AVG processing activity logs, DPIA tracking, data subject request handling
+
+**Compliance dashboard (frontend):**
+
+The `compliance-officer` and `fg-dpo` roles get a dedicated view in the Preflight UI:
+- Query audit trail by time range, event type, actor, assessment, classification
+- Verify hash chain integrity
+- Export for external auditors (CSV/JSON)
+- Alert on anomalies (unusual access patterns, repeated denials)
+- NEN 7513 report generator (who accessed patient-related assessments)
+- NIS2 incident timeline view
 
 ### Document Parsing Pipeline
 
@@ -667,7 +778,15 @@ If Nadia's assessment is `block` or risk exceeds defined appetite:
 - Nadia's regulatory findings become the first section of the output
 - Board treatment automatically upgrades to deep-review
 
-**4c. Red Team Pre-Mortem (Raven)**
+**4c. FG/DPO Lawfulness Determination (FG-DPO)**
+
+If the FG determines the proposed data processing is unlawful (no valid verwerkingsgrondslag, disproportionate, missing DPIA where required):
+- Pipeline flags: `FG DETERMINATION — processing is unlawful in current form`
+- This is NOT a veto that can be escalated or overridden. It is a legal determination under AVG Article 38(3).
+- The only path forward: change the proposal until the FG determines it is lawful.
+- Output includes the FG's specific findings and what must change.
+
+**4d. Red Team Pre-Mortem (Raven)**
 
 Triggers when:
 - Impact is high/critical, AND
@@ -702,6 +821,7 @@ Language is set per assessment. Personas respond in the selected language. Templ
 
 | Condition | Treatment |
 |-----------|-----------|
+| FG determines unlawful | **Rejected** — cannot proceed until lawful (not overridable) |
 | Victor blocks | Deep review (veto) |
 | Nadia blocks | Deep review (escalation) |
 | Any persona blocks | Deep review |
@@ -719,7 +839,7 @@ Preflight generates these products based on assessment results and triage level:
 | **Architecture Decision Record** | Architectuurbesluit (ADR) | Every decision point | Marcus + relevant domain | Decision, context, options considered, chosen option, rationale, consequences |
 | **Vendor/Product Assessment** | Leveranciers-/Productbeoordeling | When proposal involves new vendor/product | CIO, Thomas, Lena, Victor, Nadia | Vendor scorecard, tech radar position, integration complexity, security posture, compliance status, TCO |
 | **Data Protection Impact Assessment** | Gegevensbeschermingseffectbeoordeling (DPIA) | When personal/patient data is involved | Aisha, Victor, Nadia, CMIO | Data flows with classification, processing grounds, risks, mitigations, GDPR articles, processor agreements |
-| **Business Impact Analysis** | Bedrijfsimpactanalyse (BIA) | When business-critical systems are affected | Jan, Nadia, CIO | Impact ratings per process, RPO/RTO requirements, dependencies, continuity measures |
+| **Business Impact Analysis + BIV** | Bedrijfsimpactanalyse (BIA) + BIV-classificatie | When business-critical systems are affected | Jan, Victor, Nadia, CIO, CMIO | BIV classification, impact per ZiRA process, RPO/RTO, dependencies, cascade analysis, continuity measures (see BIA/BIV design below) |
 | **Integration Design** | Integratieontwerp | When systems need to connect | Lena, CMIO (for clinical), Jan | Integration pattern, API/HL7v2/FHIR specification, data flow diagram, Cloverleaf routing, error handling |
 | **Security Assessment** | Beveiligingsbeoordeling | Every assessment (embedded in PSA, standalone for high-impact) | Victor | STRIDE threat model, attack surface, zero-trust mapping, SBOM requirements, pen test scope |
 | **Tech Radar Update** | Technologieradar Update | When new technology enters the landscape | Thomas | Technology name, category, ring (ADOPT/TRIAL/ASSESS/HOLD), rationale, conditions for movement |
@@ -740,6 +860,128 @@ If new technology        → + Tech Radar Update
 ```
 
 The architect can also request specific products manually: "Run Preflight on this proposal, I need a DPIA and Integration Design."
+
+#### BIA + BIV Design
+
+The BIA is where Preflight's value becomes tangible for the board — it translates technical architecture into business risk language. In a hospital, "system X goes down" isn't an IT problem, it's a patient safety question.
+
+**BIV Classification (Beschikbaarheid, Integriteit, Vertrouwelijkheid)**
+
+Every system/proposal gets a BIV classification — the Dutch standard for the CIA triad. Each dimension is scored independently because a system can be highly confidential but tolerate some downtime, or vice versa.
+
+| Dimensie | NL | EN | Question | Scored by |
+|----------|----|----|----------|-----------|
+| **B** | Beschikbaarheid | Availability | How long can this system be unavailable before patient care, operations, or compliance is impacted? | Jan (Infrastructure), CMIO (clinical) |
+| **I** | Integriteit | Integrity | What is the impact if data in this system is incorrectly modified, corrupted, or incomplete? | Aisha (Data), CMIO (clinical), Victor (Security) |
+| **V** | Vertrouwelijkheid | Confidentiality | What is the impact if data in this system is accessed by unauthorized persons? | Victor (Security), Nadia (Compliance), CMIO (if patient data) |
+
+**BIV scoring scale:**
+
+| Score | Level | B — Beschikbaarheid | I — Integriteit | V — Vertrouwelijkheid |
+|-------|-------|---------------------|-----------------|----------------------|
+| **3** | Hoog / High | Uitval >1 uur: direct risico voor patiëntveiligheid of wettelijke verplichting. Zorgproces kan niet handmatig worden voortgezet. | Onjuiste data leidt direct tot verkeerde klinische beslissingen of foutieve rapportage aan toezichthouder. | Ongeautoriseerde toegang leidt tot schending medisch beroepsgeheim, AVG-melding aan AP verplicht, persoonlijk letsel betrokkenen. |
+| **2** | Midden / Medium | Uitval >4 uur: significante hinder voor bedrijfsvoering, workaround beschikbaar maar kostbaar. | Onjuiste data leidt tot vertraging of herwerk, geen direct patiëntrisico. | Ongeautoriseerde toegang leidt tot reputatieschade, mogelijke AVG-melding, geen direct persoonlijk letsel. |
+| **1** | Laag / Low | Uitval >24 uur: beperkte impact, handmatige alternatieven beschikbaar. | Onjuiste data heeft beperkte impact, eenvoudig te herstellen. | Ongeautoriseerde toegang heeft beperkte impact, geen persoonsgegevens betrokken. |
+
+**How personas score BIV:**
+
+Each relevant persona independently assesses their dimension. The pipeline takes the **highest score per dimension** (conservative — one persona flagging high overrides others flagging medium):
+
+```
+B (Beschikbaarheid):
+  Jan scores:  2 (workaround available via failover)
+  CMIO scores: 3 (lab results unavailable → clinical decisions delayed)
+  → Final B = 3 (CMIO's clinical perspective overrides)
+
+I (Integriteit):
+  Aisha scores: 2 (data quality issue, no direct clinical impact)
+  CMIO scores:  3 (incorrect lab values → wrong diagnosis)
+  Victor scores: 2 (integrity controls in place)
+  → Final I = 3 (CMIO's patient safety perspective overrides)
+
+V (Vertrouwelijkheid):
+  Victor scores: 3 (patient data, medical records)
+  Nadia scores:  3 (bijzondere persoonsgegevens under AVG)
+  CMIO scores:   3 (medisch beroepsgeheim under WGBO)
+  → Final V = 3 (unanimous)
+```
+
+**BIV feeds into other systems:**
+
+| BIV Score | Triggers |
+|-----------|----------|
+| B=3 | RPO ≤ 1 hour, RTO ≤ 1 hour, DR plan mandatory, ISO 22301 scope |
+| B=2 | RPO ≤ 4 hours, RTO ≤ 4 hours, DR plan required |
+| I=3 | Data validation controls mandatory, audit trail on all mutations, backup verification |
+| I=2 | Standard data quality controls, periodic integrity checks |
+| V=3 | NEN 7510 full scope, encryption at rest + transit, NEN 7513 logging, ABAC patient-data policy, DPIA required |
+| V=2 | Standard access control, encryption in transit, standard logging |
+| Any dimension = 3 | BIA automatically upgrades to full report, board treatment = deep review |
+
+**BIA Impact Dimensions (hospital-specific):**
+
+| Dimension | Question | Input Source | Scored by |
+|-----------|----------|-------------|-----------|
+| Patiëntveiligheid | Could unavailability, data corruption, or data breach directly harm patients? | CMIO clinical assessment | CMIO |
+| Zorgcontinuïteit | Which of the 8 ZiRA zorgprocessen are affected? Can they continue handmatig? For how long? | ArchiMate model (process → application mapping), ZiRA procesmodel | CMIO, Sophie |
+| Cascade-risico | What other systems fail when this one fails? What's the blast radius? | ArchiMate model (serving/flow relationships), TOPdesk CMDB (CI dependencies) | Lena, Jan |
+| Regelgeving | Does downtime trigger reporting obligations? (NIS2 24h to CSIRT, IGJ melding, AP melding) | Nadia's regulatory assessment | Nadia |
+| Financiële impact | Revenue loss, penalties, recovery cost, overtime — per hour of downtime | CIO assessment + TOPdesk (historical incident cost if available) | CIO |
+| Reputatie | Public-facing system? Media risk? Patient communication affected? | CIO assessment | CIO |
+| Data-integriteit | Could data be lost or corrupted? What's the recovery path? Backup RPO achievable? | Jan infrastructure assessment + Aisha data assessment | Aisha, Jan |
+
+**BIA output template:**
+
+```markdown
+# Bedrijfsimpactanalyse: [Systeemnaam / Voorstel]
+# Business Impact Analysis: [System name / Proposal]
+
+## BIV-classificatie / CIA Classification
+| Dimensie | Score | Toelichting | Beoordelaar |
+|----------|-------|-------------|-------------|
+| B — Beschikbaarheid | 3 (Hoog) | Lab results unavailable → clinical decisions delayed | CMIO |
+| I — Integriteit | 3 (Hoog) | Incorrect lab values → wrong diagnosis possible | CMIO |
+| V — Vertrouwelijkheid | 3 (Hoog) | Patient data, medisch beroepsgeheim | Victor, Nadia, CMIO |
+
+## RPO/RTO Doelen / Recovery Targets
+| Metric | Doel | Verantwoording |
+|--------|------|----------------|
+| RPO (Recovery Point Objective) | ≤ 1 uur | B=3: patiëntveiligheid |
+| RTO (Recovery Time Objective) | ≤ 1 uur | B=3: patiëntveiligheid |
+| MTPD (Maximum Tolerable Period of Disruption) | 2 uur | Klinisch proces stopt volledig na 2 uur |
+
+## Getroffen ZiRA Zorgprocessen
+| Proces | Impact | Handmatig voort te zetten? | Maximale duur handmatig |
+|--------|--------|---------------------------|------------------------|
+| Diagnosticeren | Hoog | Beperkt (papieren aanvragen) | 4 uur |
+| Behandelen | Midden | Ja (mondelinge overdracht) | 8 uur |
+| Aanvullend onderzoek | Hoog | Nee (apparatuur afhankelijk) | 0 uur |
+
+## Cascade-analyse / Dependency Analysis
+[ArchiMate-based: which systems depend on this, what breaks downstream]
+| Afhankelijk systeem | Relatie | Impact bij uitval |
+|---------------------|---------|-------------------|
+| EPD | Serving | Geen lab resultaten beschikbaar |
+| PACS (JiveX) | Flow | Beeldvorming niet koppelbaar aan order |
+
+## Meldplichten / Reporting Obligations
+| Verplichting | Termijn | Trigger |
+|-------------|---------|---------|
+| NIS2 → CSIRT | 24 uur (early warning), 72 uur (incident notification) | B=3 systeem, uitval >1 uur |
+| IGJ melding | Onverwijld | Patiëntveiligheid in het geding |
+| AP melding | 72 uur | Als datalek bij V=3 systeem |
+
+## Continuïteitsmaatregelen / Continuity Measures
+[Jan's infrastructure assessment: what's in place, what's needed]
+
+## Financiële Impact / Financial Impact
+[CIO's assessment: cost per hour of downtime]
+
+## Aanbevelingen / Recommendations
+[Consolidated from all persona assessments]
+```
+
+The BIV classification cascades through the entire Preflight assessment — it influences the ABAC access policies (V=3 → restrict access), the audit trail requirements (V=3 → NEN 7513 full logging), the board treatment (any 3 → deep review), and the conditions for approval (B=3 → DR plan mandatory before go-live).
 
 #### PSA Template Structure (primary output)
 
@@ -888,7 +1130,7 @@ These are surfaced in every Preflight output under **"Open Questions for the Boa
 
 ## Dogfooding: Personas Govern Preflight's Development
 
-The same 13 personas that evaluate business requests at runtime also evaluate every architecture and design decision made building Preflight itself. Same `selectRelevant()`, same incentives, same constraints. If Victor would block a customer's proposal for missing a threat model, he blocks your PR for the same reason.
+The same 17 personas that evaluate business requests at runtime also evaluate every architecture and design decision made building Preflight itself. Same `selectRelevant()`, same incentives, same constraints. If Victor would block a customer's proposal for missing a threat model, he blocks your PR for the same reason. If the FG says Preflight's own data processing is unlawful, it doesn't ship.
 
 ### How It Works
 
@@ -1003,7 +1245,7 @@ Build:
 - LLM via NIM (self-hosted) or Ollama (local dev) — model choice deferred
 - 1 Milvus instance
 - 4 integrations (ArchiMate model parser, TOPdesk REST, SharePoint + OneDrive via Microsoft Graph)
-- 13 MiroFish personas (permanent, reusable across all assessments)
+- 17 MiroFish personas (permanent, reusable across all assessments)
 - Marginal cost per assessment: near zero for light/strong tiers; frontier tier cost-per-call for high-impact only
 
 ## Repository
@@ -1014,7 +1256,7 @@ Source: https://github.com/rvdlaar/preflight
 preflight/
 ├── PREFLIGHT.md                       # This document
 ├── personas/
-│   ├── ea_council.py                  # 13 MiroFish personas (ported from .mjs)
+│   ├── ea_council.py                  # 17 MiroFish personas (ported from .mjs)
 │   ├── routing.py                     # selectRelevant() + ROUTING table
 │   └── enrichment.py                  # injectLandscapeContext()
 ├── knowledge/                         # RAG corpus (markdown → Milvus)
@@ -1052,7 +1294,9 @@ preflight/
 │   │   ├── authz.py                  # OAuth 2.1 + RBAC/ABAC policy engine
 │   │   └── policies.py              # ABAC policies (patient data, export control, vendor-confidential)
 │   ├── audit/
-│   │   └── trail.py                  # Append-only NEN 7513 audit log (PostgreSQL)
+│   │   ├── trail.py                  # Append-only hash-chained audit log (PostgreSQL)
+│   │   ├── siem.py                   # SIEM export (CEF/syslog)
+│   │   └── compliance.py             # NEN 7513 / NIS2 / MDR / SOC 2 report generators
 │   ├── parsing/
 │   │   ├── router.py                 # File type detection + parser routing
 │   │   ├── markitdown.py             # DOCX/PPTX/XLSX → Markdown (local)

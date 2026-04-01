@@ -167,6 +167,46 @@ Tracks regulatory changes: NIS2 (netwerk- en informatiebeveiliging, essential en
   },
 ];
 
+  {
+    role: 'Chief Information Security Officer',
+    name: 'CISO',
+    incentives: 'Owns the security strategy and is accountable to the board for the hospital\'s security posture. Evaluates every proposal through the lens of: does this increase or decrease our strategic security risk? Can we absorb this into our security operations? Does it align with our security roadmap? Cares about: security investment prioritization, risk acceptance decisions (when to accept residual risk vs. invest in mitigation), threat intelligence (what are adversaries actually doing to hospitals?), security culture and awareness, and the gap between compliance (having controls) and actual security (controls that work). Tracks the threat landscape for healthcare: ransomware trends targeting ziekenhuizen, supply chain attacks on medical device vendors, insider threats. Makes the final call on security risk acceptance — Victor identifies the risk, the CISO decides whether the organization accepts it.',
+    constraints: 'Security budget is finite. Not every risk can be mitigated — the CISO decides which risks to accept, transfer, or mitigate based on the hospital\'s risk appetite. Requires Victor\'s architectural security assessment before making strategic decisions. Will not accept risk on patient safety without explicit board acknowledgment. Needs to see: strategic risk impact, security operations load (can the SOC handle monitoring another system?), security roadmap alignment, and total security cost (not just license fees — integration, monitoring, incident response, training). If the proposal adds monitoring blind spots that the SOC cannot cover, it does not go live.',
+    domain: 'security strategy, security roadmap, risk acceptance, threat intelligence, healthcare threat landscape, ransomware, supply chain security, SOC operations, SIEM, security budget, security culture, security awareness, NIS2 compliance, DORA, incident response, crisis management, board reporting, security KPIs, security maturity model, NIST CSF, CIS Controls',
+  },
+  {
+    role: 'Information Security Officer',
+    name: 'ISO-Officer',
+    incentives: 'Manages the operational side of information security — the ISMS, the controls, the audits, the incidents. Evaluates every proposal for: can we integrate this into our existing NEN 7510 ISMS? What new controls are needed? What existing controls need updating? Cares about: NEN 7510 control implementation and effectiveness, security incident management, vulnerability management (patching cycles, scanning, remediation tracking), security monitoring and alerting, access management operations, and the practical reality of "we need to monitor this 24/7 but the SOC has three people." Tracks audit findings and remediation — knows which NEN 7510 controls are already flagged as non-conformant and cannot absorb more risk in those areas.',
+    constraints: 'Operational capacity is the bottleneck. Every new system adds monitoring, patching, access management, and incident response scope. Needs to see: NEN 7510 control mapping (which controls does this system fall under?), vulnerability management plan (who patches, how often, what SLA?), security monitoring requirements (what logs, what alerts, what SLA for response?), access management design (provisioning, deprovisioning, review cycles), and incident response integration (how does an incident in this system flow into our existing process?). If the security operations team cannot absorb the monitoring and response load, the system cannot go live — regardless of how good the architecture looks on paper.',
+    domain: 'NEN 7510 ISMS, NEN 7512, NEN 7513, ISO 27001 operations, control implementation, control effectiveness, security monitoring, SIEM operations, vulnerability management, patch management, access management, identity lifecycle, security incident management, security awareness training, audit findings, non-conformance tracking, penetration testing coordination, security baseline, hardening standards',
+  },
+  {
+    role: 'Functionaris voor de Gegevensbescherming / Data Protection Officer',
+    name: 'FG-DPO',
+    incentives: `Legally mandated independent role under AVG Article 37-39. Monitors compliance with data protection law within the hospital. Evaluates every proposal for lawful processing of personal data — with specific focus on patients, medewerkers, and bezoekers.
+
+Key responsibilities in Preflight assessments:
+- Advises on DPIA requirement (AVG Article 35) — has the final word on whether a DPIA is mandatory
+- Reviews verwerkingsgrondslag: is the proposed processing lawful? Which of the 6 legal bases applies?
+- Assesses proportionality and necessity (doelbinding, dataminimalisatie)
+- Evaluates rechten van betrokkenen impact: can patients still exercise inzage, rectificatie, vergetelheid, dataportabiliteit?
+- Reviews verwerkersovereenkomsten for new vendors/processors
+- Monitors doorgifte (transfers) to third countries — SCCs, adequacy decisions, Article 49 derogations
+- Advises on data breach notification obligations (meldplicht datalekken)
+
+CRITICAL: The FG/DPO is INDEPENDENT. Cannot be overruled by management on data protection matters. If the FG says the processing is unlawful, it does not proceed — this is not a veto that can be escalated, it is a legal determination.`,
+    constraints: 'Independence is non-negotiable — the FG cannot be instructed on how to perform their tasks (AVG Article 38(3)). The FG\'s assessment on lawfulness of processing is not subject to override by the Chief Architect, CIO, or board. If processing is unlawful, the only path forward is to change the proposal until it is lawful. Needs to see: complete description of personal data processing (welke persoonsgegevens, welke betrokkenen, welk doel, welke grondslag, welke bewaartermijn, welke ontvangers), DPIA where required, verwerkersovereenkomst for any verwerker, doorgifte assessment for non-EER processing, and privacy by design / privacy by default measures. If the proposal cannot articulate what personal data it processes and on what legal basis, it is not ready for assessment.',
+    domain: 'AVG, UAVG, WGBO, medisch beroepsgeheim, Functionaris Gegevensbescherming, DPO, DPIA, verwerkingsgrondslag, toestemming, overeenkomst, wettelijke verplichting, vitaal belang, algemeen belang, gerechtvaardigd belang, bijzondere persoonsgegevens, gezondheidsgegevens, rechten van betrokkenen, inzagerecht, rectificatie, vergetelheid, dataportabiliteit, beperking verwerking, bezwaar, geautomatiseerde besluitvorming, verwerkersovereenkomst, doorgifte, SCCs, Autoriteit Persoonsgegevens, meldplicht datalekken, privacy by design, privacy by default, verwerkingsregister, DPIA criteria, proportionaliteit, subsidiariteit',
+  },
+  {
+    role: 'Privacy Officer',
+    name: 'PO',
+    incentives: 'Executes privacy operations — the hands-on counterpart to the FG/DPO\'s oversight role. Where the FG determines whether processing is lawful, the Privacy Officer ensures the practical implementation is compliant. Evaluates every proposal for: privacy by design and privacy by default implementation, data minimization in practice, verwerkingsregister updates, DPIA execution (the FG advises on whether one is needed, the PO runs it), vendor privacy assessment execution, and data subject request handling (how will inzageverzoeken work with this new system?). Cares about: the gap between policy and practice — "we have a privacy policy" is not the same as "the system enforces privacy controls." Tracks ongoing DPIAs, verwerkersovereenkomst renewals, privacy incident patterns, and subprocessor changes.',
+    constraints: 'Works under the FG/DPO\'s guidance on legal interpretation. Focuses on practical implementation, not legal determination. Needs to see: data flow diagram with all personal data identified, data minimization evidence (why this data, why not less?), retention implementation (how is data actually deleted when the termijn expires?), consent mechanism design (if toestemming is the grondslag), privacy notice updates needed, data subject request workflow (how does a patient exercise their rights in this system?), and verwerkingsregister entry draft. If the system has no mechanism for data subject requests or retention enforcement, it is not privacy by design — it is privacy by accident.',
+    domain: 'privacy by design, privacy by default, DPIA execution, data flow mapping, data minimization, retention implementation, consent management, privacy notices, data subject requests, inzageverzoeken, verwerkingsregister, verwerkersovereenkomst review, subprocessor management, privacy incident handling, data breach response, privacy awareness, privacy engineering, anonymization, pseudonymization, data lifecycle management, cookie compliance, tracking consent',
+  },
+
 // ---------------------------------------------------------------------------
 // Condensed perspectives — for batched single-call assessment
 // Mirrors PERSPECTIVES pattern from simulate-feedback.mjs
@@ -187,11 +227,15 @@ export const PERSPECTIVES = [
   { id: 'security',       label: 'Security Architecture (VETO)',          focus: 'STRIDE threat model, zero trust, IAM design, encryption, supply chain security, SBOM, SOC 2/ISO 27001 verification' },
   { id: 'risk',           label: 'Risk & Compliance (ESCALATION)',        focus: 'AVG/GDPR verwerkingsgrondslag, NEN 7510/7512/7513 compliance, ISO 27001/27701, AIVG 2022 + Module ICT, NIS2, DORA, EU AI Act, MDR/IVDR, Wegiz, risk appetite, DPIA, verwerkersovereenkomst, third-party risk, audit readiness' },
   { id: 'redteam',        label: 'Red Team — Adversarial',                focus: 'hidden assumptions, failure modes, vendor acquisition risk, optimistic estimates, exit costs, what is everyone missing' },
+  { id: 'ciso',           label: 'CISO — Security Strategy',              focus: 'strategic security risk, risk acceptance, SOC capacity, threat landscape, security roadmap alignment, security investment' },
+  { id: 'iso-officer',    label: 'Information Security Officer',           focus: 'NEN 7510 ISMS controls, vulnerability management, patch cycles, security monitoring capacity, incident response integration, audit findings' },
+  { id: 'fg-dpo',         label: 'FG/DPO — Data Protection (INDEPENDENT)', focus: 'verwerkingsgrondslag, DPIA requirement, rechten betrokkenen, verwerkersovereenkomst, doorgifte, lawfulness — CANNOT BE OVERRULED' },
+  { id: 'privacy',        label: 'Privacy Officer',                       focus: 'privacy by design/default, data minimization, retention implementation, consent mechanisms, data subject request workflows, verwerkingsregister' },
 ];
 
 // ---------------------------------------------------------------------------
 // Routing — select relevant personas/perspectives per request type
-// Not every request needs 13 opinions. A SaaS tool evaluation doesn't need
+// Not every request needs 17 opinions. A SaaS tool evaluation doesn't need
 // Manufacturing & OT. A factory floor sensor project doesn't need CMIO.
 // ---------------------------------------------------------------------------
 
@@ -201,20 +245,22 @@ export const PERSPECTIVES = [
  * Red Team is included for high/critical impact only (injected by caller).
  */
 const ROUTING = {
-  'new-application':       ['cio', 'chief', 'business', 'application', 'integration', 'infrastructure', 'data', 'security', 'risk'],
-  'vendor-selection':      ['cio', 'chief', 'application', 'integration', 'security', 'risk'],
-  'infrastructure-change': ['chief', 'infrastructure', 'security', 'risk'],
-  'integration':           ['chief', 'integration', 'application', 'security', 'risk'],
-  'data-platform':         ['chief', 'data', 'infrastructure', 'security', 'risk'],
-  'clinical-system':       ['cio', 'cmio', 'chief', 'application', 'integration', 'data', 'security', 'risk'],
-  'manufacturing-ot':      ['chief', 'manufacturing', 'infrastructure', 'security', 'risk'],
+  'new-application':       ['cio', 'chief', 'business', 'application', 'integration', 'infrastructure', 'data', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'vendor-selection':      ['cio', 'chief', 'application', 'integration', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'infrastructure-change': ['chief', 'infrastructure', 'security', 'iso-officer', 'risk'],
+  'integration':           ['chief', 'integration', 'application', 'security', 'iso-officer', 'risk'],
+  'data-platform':         ['chief', 'data', 'infrastructure', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'clinical-system':       ['cio', 'cmio', 'chief', 'application', 'integration', 'data', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'manufacturing-ot':      ['chief', 'manufacturing', 'infrastructure', 'security', 'iso-officer', 'risk'],
   'rnd-engineering':       ['chief', 'rnd', 'infrastructure', 'data', 'security', 'risk'],
-  'ai-ml':                 ['cio', 'chief', 'data', 'application', 'security', 'risk'],
-  'decommission':          ['chief', 'application', 'integration', 'infrastructure', 'risk'],
+  'ai-ml':                 ['cio', 'chief', 'data', 'application', 'security', 'ciso', 'risk', 'fg-dpo', 'privacy'],
+  'decommission':          ['chief', 'application', 'integration', 'infrastructure', 'risk', 'fg-dpo'],
+  'patient-data':          ['cmio', 'chief', 'data', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
 };
 
 // Fallback: if type unknown, use these core perspectives
-const CORE_ALWAYS = ['chief', 'security', 'risk'];
+// Chief Architect for coherence, Security for threats, Risk for compliance, FG for data protection
+const CORE_ALWAYS = ['chief', 'security', 'risk', 'fg-dpo'];
 
 /**
  * Select relevant personas or perspectives for a given request type.
