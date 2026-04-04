@@ -243,24 +243,36 @@ Preflight generates **draft architecture products** — the documents architects
 | **Project Start Architecture** | Project Start Architectuur (PSA) | Every assessment | All selected |
 | **Architecture Decision Record** | Architectuurbesluit (ADR) | Every decision point | Marcus + relevant domain |
 | **Clinical Impact Brief** | Klinisch Impactoverzicht | Clinical system proposals | CMIO |
+| **Process Impact Assessment** | Procesimpactanalyse | Process-changing proposals | Joris, CMIO (clinical pathways) |
 | **Vendor/Product Assessment** | Leveranciers-/Productbeoordeling | New vendor/product | CIO, Thomas, Lena, Victor, Nadia |
 | **Data Protection Impact Assessment** | Gegevensbeschermingseffectbeoordeling (DPIA) | Personal/patient data involved | Aisha, Victor, Nadia, CMIO |
 | **Business Impact Analysis + BIV** | Bedrijfsimpactanalyse (BIA) + BIV-classificatie | Business-critical systems | Jan, Victor, Nadia, CIO, CMIO |
-| **Integration Design** | Integratieontwerp | Systems need to connect | Lena, CMIO (clinical), Jan |
+| **Integration Design** | Integratieontwerp | Systems need to connect | Lena, CMIO (clinical), Jan, Ruben |
+| **Network Impact Assessment** | Netwerkimpactanalyse | New traffic patterns introduced | Ruben, Jan |
 | **Security Assessment** | Beveiligingsbeoordeling | Every assessment (standalone for high-impact) | Victor |
+| **NFR Specification** | Niet-functionele eisen | High-impact proposals, solution handover | Marco, Jan |
+| **EU AI Act Risk Classification** | EU AI-verordening risicoclassificatie | AI/ML proposals | Aisha, Nadia |
+| **Operational Readiness Checklist** | Operationele gereedheid checklist | Every production system | Jan, Ruben, ISO-Officer |
+| **Architecture Roadmap Impact** | Architectuurroadmap impactanalyse | Multiple related proposals, roadmap deviation | Femke, Marcus |
 | **Tech Radar Update** | Technologieradar Update | New technology enters landscape | Thomas |
 
 **Product selection logic:**
 
 ```
 Every assessment         → PSA (always) + ADR (always)
-Clinical system          → + Clinical Impact Brief
+Clinical system          → + Clinical Impact Brief + Process Impact
 New vendor/product       → + Vendor Assessment
 Personal/patient data    → + DPIA + verwerkingsregister draft
-Business-critical        → + BIA/BIV
-System integration       → + Integration Design
+Business-critical        → + BIA/BIV + Operational Readiness + NFR Specification
+System integration       → + Integration Design + Network Impact
+Process-changing         → + Process Impact Assessment
+AI/ML system             → + EU AI Act Risk Classification
 High security impact     → + standalone Security Assessment
 New technology           → + Tech Radar Update
+Roadmap deviation        → + Architecture Roadmap Impact
+Decommission             → + Decommission Impact (cascade, data migration, interface sunset)
+Production deployment    → + Operational Readiness Checklist
+Solution handover        → + NFR Specification
 ```
 
 All products are bilingual (NL/EN). Language is set per assessment. ZiRA terminology is Dutch-native. Templates: see [templates/](templates/).
@@ -343,15 +355,33 @@ This eliminates the most time-consuming part of the current process: the iterati
 
 ### Institutional Memory
 
-Preflight gets smarter with every assessment. After 50 assessments, it knows the hospital better than any individual architect.
+Preflight gets smarter with every assessment. After 50 assessments, it knows the hospital better than any individual architect. When an architect leaves, their knowledge stays. When a new architect starts, they have institutional memory from day one.
 
-**Similar past assessments**: When a new request comes in, Preflight searches previous assessments by semantic similarity. Shows match score, board decision, conditions set, which conditions are still open.
+**Similar past assessments**: Semantic similarity search over previous assessments. Match score, board decision, conditions set, which conditions are still open. Cross-assessment impact detection: "Assessment #42 and #45 compete for the same capability space. Board should review together."
 
-**Vendor intelligence**: Cumulative vendor profiles. Previous assessments, board decisions, AIVG status, NEN 7510 certification, verwerkersovereenkomst status, number of systems in landscape, open conditions. When an architect leaves, their vendor knowledge stays.
+**Vendor intelligence**: Cumulative vendor profiles. Previous assessments, board decisions, AIVG compliance status, NEN 7510 certification, verwerkersovereenkomst lifecycle (signed date, expiry, sub-processor list, BOZ conformity, last review), contract expiry alerting, number of systems in landscape, open conditions. When an architect leaves, their vendor knowledge stays.
 
-**Architecture debt register**: Every assessment identifies debt. Linked to ArchiMate elements. Categorized: technical / integration / security / compliance / portfolio. When a new proposal comes in: "This resolves debt item #47 but creates new debt item #102."
+**Architecture debt register**: Every assessment identifies debt. Linked to ArchiMate elements. Categorized: technical / integration / security / compliance / portfolio. Visualized as heat map on the capability model — where is debt concentrated? When a new proposal comes in: "This resolves debt item #47 but creates new debt item #102." Principle violation trends: "ZiRA principle 9 (Eenvoudig) violated in 60% of proposals — portfolio is getting more complex, not simpler."
 
-**Natural language query**: "Show me all assessments Victor blocked in the last 6 months." "Which vendor has the most open conditions?" "What architecture debt is linked to the EPD?"
+**Solution pattern library**: After 50 assessments, query: "Show me all solutions that used Cloverleaf for DICOM routing — which worked, which failed, why." Pattern reuse across assessments prevents repeating mistakes.
+
+**Information ownership registry**: Persistent registry of which system is authoritative for which information object. "Medicatieoverzicht — authoritative source: EPD, owner: Apotheek, consumers: 7 systems." Every assessment checks new systems against this registry and flags competing authorities.
+
+**Verwerkingsregister**: Cumulative register of all processing activities identified across assessments. DPIA drafts accumulate into a master register. Queryable. AP audit-ready within 24 hours.
+
+**Architecture KPIs** (computed from assessment history): percentage of landscape aligned with target architecture, architecture debt trend, standards compliance rate, roadmap delivery rate, BIV distribution, false fast-track rate, board agreement rate, condition close rate.
+
+**Natural language query**: "Show me all assessments Victor blocked in the last 6 months." "Which vendor has the most open conditions?" "What architecture debt is linked to the EPD?" "Which ZiRA principles are most commonly violated?"
+
+### Always-On Landscape Tools
+
+These features work outside the assessment pipeline — persistent tools the architect uses daily.
+
+**Cascade dependency graph**: `preflight cascade --system "Labosys"` — instant blast radius for any system in the ArchiMate model, always current. Not just for new proposals. For DR planning, patching coordination, change advisory boards, and incident response.
+
+**Capacity impact overlay**: When a new proposal adds storage or bandwidth demand, overlay against current utilization. "Sysmex adds 15-45 TB/year. Current SAN capacity: 78% utilized. Threshold breach in 8 months."
+
+**DR tier dashboard**: How many Tier 1/2/3 systems does the hospital have? Can the DR infrastructure handle another B=3 system? Distribution across the portfolio.
 
 ---
 
@@ -575,17 +605,42 @@ Build:
 
 **Kill metric**: If after shadow mode testing, false fast-track rate >10% or board agreement <60%, stop and reassess.
 
-### Phase 2 — Grounded (months 2-3)
+### Phase 2 — Grounded + Executive Dashboard (months 2-3)
 
-Add: TOPdesk + SharePoint/OneDrive integration (Microsoft Graph), LeanIX integration, document parsing pipeline, embedding pipeline with persona-scoped retrieval, self-service intake portal, conversational clarification, Entra ID authentication, RBAC/ABAC authorization, audit trail (append-only PostgreSQL, hash chain), BIV classification in output.
+Add:
+- TOPdesk + SharePoint/OneDrive integration (Microsoft Graph), LeanIX bidirectional sync
+- Document parsing pipeline, embedding pipeline with persona-scoped retrieval
+- Entra ID authentication, RBAC/ABAC authorization
+- Audit trail (append-only PostgreSQL, hash chain), BIV classification in output
+- **Read-only web dashboard** (pipeline status, board agenda, condition tracking, architecture KPIs) — executives need this to champion adoption
+- Cascade dependency graph as always-on tool (`preflight cascade --system`)
+- Verwerkingsregister cumulative view
 
-### Phase 3 — Deep (months 3-4)
+### Phase 3 — Deep + Full Product Suite (months 3-4)
 
-Add: `simulatePanel()` deep mode with interaction rounds, Step 4 challenge chain (veto/escalation/FG/Red Team), NeMo Guardrails, all 9 architecture product templates with bilingual output, similar past assessments, delta re-assessment, vendor intelligence profiles, NEN 7513 compliance logging, SIEM integration, shadow mode testing alongside existing process.
+Add:
+- `simulatePanel()` deep mode with interaction rounds
+- Step 4 challenge chain (veto/escalation/FG/Red Team)
+- NeMo Guardrails
+- All 15 architecture product templates with bilingual output:
+  - Core: PSA, ADR, Clinical Impact Brief, Vendor Assessment, DPIA, BIA/BIV, Integration Design, Security Assessment, Tech Radar Update
+  - New: Process Impact Assessment, Network Impact Assessment, NFR Specification, EU AI Act Risk Classification, Operational Readiness Checklist, Architecture Roadmap Impact
+- Similar past assessments, delta re-assessment, vendor intelligence profiles
+- Information ownership registry, solution pattern library
+- NEN 7513 compliance logging, SIEM integration
+- Shadow mode testing alongside existing process
 
 ### Phase 4 — The Platform (months 4-6)
 
-Add: Next.js frontend with full bilingual UI, condition tracking with dashboard, board preparation packs with decision recording, architecture debt register linked to ArchiMate, compliance dashboard (audit trail, hash verification, NEN 7513 reports), feedback capture (board marks findings as useful/missed/wrong).
+Add:
+- Full Next.js frontend with bilingual UI (replaces read-only dashboard)
+- Self-service intake portal, conversational clarification
+- Condition tracking with escalation, reminders, and lifecycle reporting
+- Board preparation packs with decision recording and besluitenlijst generation
+- Architecture debt register with heat map on capability model
+- Architecture KPIs dashboard (debt trend, standards compliance, principle violations)
+- Compliance dashboard (audit trail, hash verification, NEN 7513 reports, verwerkingsregister)
+- Feedback capture (board marks findings as useful/missed/wrong)
 
 ### Phase 5 — Learn (ongoing, non-optional)
 
