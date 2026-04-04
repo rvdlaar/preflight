@@ -55,9 +55,10 @@ Classifying...
   Impact:   high
   Triggers: patient data (tissue samples, pathology reports)
 
-  Personas selected (13):
-  CIO, CMIO, Marcus, Thomas, Lena, Aisha, Victor, CISO,
-  ISO-Officer, Nadia, FG-DPO, PO, Raven (high impact)
+  Personas selected (18 + Red Team):
+  CIO, CMIO, Marcus, Marco, Sophie, Joris, Thomas, Lena, Daan,
+  Jan, Ruben, Aisha, Victor, CISO, ISO-Officer, Nadia, FG-DPO,
+  PO, Raven (high impact)
 
   Mode: deep (high impact → per-persona assessment)
 
@@ -103,15 +104,19 @@ Assessment complete.
   BIV:    3-3-3 (high across all dimensions)
 
   Products generated:
-    1. PSA draft           → preflight-output/psa-digital-pathology.md
-    2. ADR draft           → preflight-output/adr-digital-pathology.md
-    3. Clinical Impact     → preflight-output/clinical-digital-pathology.md
-    4. DPIA draft          → preflight-output/dpia-digital-pathology.md
-    5. BIA/BIV             → preflight-output/bia-digital-pathology.md
-    6. Security (STRIDE)   → preflight-output/security-digital-pathology.md
-    7. Vendor Assessment   → preflight-output/vendor-sysmex.md
-    8. Integration Design  → preflight-output/integration-digital-pathology.md
-    9. Tech Radar Update   → preflight-output/techradar-sysmex.md
+    1. PSA draft            → preflight-output/psa-digital-pathology.md
+    2. ADR draft            → preflight-output/adr-digital-pathology.md
+    3. Clinical Impact      → preflight-output/clinical-digital-pathology.md
+    4. Process Impact       → preflight-output/process-digital-pathology.md
+    5. DPIA draft           → preflight-output/dpia-digital-pathology.md
+    6. BIA/BIV              → preflight-output/bia-digital-pathology.md
+    7. Integration Design   → preflight-output/integration-digital-pathology.md
+    8. Network Impact       → preflight-output/network-digital-pathology.md
+    9. Security (STRIDE)    → preflight-output/security-digital-pathology.md
+   10. NFR Specification    → preflight-output/nfr-digital-pathology.md
+   11. Vendor Assessment    → preflight-output/vendor-sysmex.md
+   12. Operational Readiness→ preflight-output/ops-digital-pathology.md
+   13. Tech Radar Update    → preflight-output/techradar-sysmex.md
 
   Diagrams generated:
    10. Integration flow     → preflight-output/diagrams/integration-flow.mmd
@@ -340,7 +345,7 @@ Quick start:
 **What they DON'T need to do:**
 - No GPU setup (uses Ollama locally or configured API endpoint)
 - No vector database setup (pgvector in embedded SQLite for Phase 1, or configured PostgreSQL)
-- No persona configuration (15 core personas loaded by default)
+- No persona configuration (20 core personas loaded by default)
 - No authentication setup (single-user CLI mode, auth added when deployed as service)
 - No knowledge base curation (built-in regulatory corpus, hospital-specific added incrementally)
 
@@ -529,6 +534,11 @@ preflight conditions                List open conditions across all assessments
 preflight conditions <id>           Conditions for a specific assessment
 preflight vendors                   Vendor intelligence profiles
 preflight debt                      Architecture debt register
+preflight cascade --system <name>   Blast radius for any system (always current)
+preflight registry                  Information ownership registry
+preflight verwerkingsregister       Cumulative processing activities register
+preflight patterns                  Solution pattern library
+preflight kpis                      Architecture KPIs dashboard
 preflight query "question"          Natural language query over all data
 ```
 
@@ -703,7 +713,7 @@ If the architect has to configure anything before their first assessment, 50% wi
 ### Don't show the pipeline
 The architect doesn't need to see "Step 0: Ingest... Step 1: Classify... Step 2: Retrieve..." They paste a request and get output. The pipeline is internal. Show progress ("CMIO assessing... Victor assessing...") because that's interesting. Don't show architecture.
 
-### Don't dump all 15 personas on the first run
+### Don't dump all 20 personas on the first run
 For a simple SaaS request, 6 personas are relevant. Don't show the architect 15 assessments when 9 of them say "N/A — not relevant to this request." `selectRelevant()` exists for a reason. The output should feel focused, not exhaustive.
 
 ### Don't require authentication for single-user CLI

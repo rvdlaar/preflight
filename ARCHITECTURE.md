@@ -546,7 +546,7 @@ preflight/
 ├── ARCHITECTURE.md                    # This document
 ├── DIGITAL-PATHOLOGY.md               # Worked example
 ├── personas/
-│   ├── ea_council.py                  # 17 MiroFish personas (ported from .mjs)
+│   ├── ea_council.py                  # 22 MiroFish personas (ported from .mjs)
 │   ├── routing.py                     # selectRelevant() + ROUTING table
 │   └── enrichment.py                  # injectLandscapeContext()
 ├── knowledge/                         # RAG corpus (markdown → vector store)
@@ -559,11 +559,17 @@ preflight/
 │   ├── psa.md
 │   ├── adr.md
 │   ├── clinical-impact.md
+│   ├── process-impact.md
 │   ├── vendor-assessment.md
 │   ├── dpia.md
 │   ├── bia-biv.md
 │   ├── integration-design.md
+│   ├── network-impact.md
 │   ├── security-assessment.md
+│   ├── nfr-specification.md
+│   ├── eu-ai-act.md
+│   ├── operational-readiness.md
+│   ├── roadmap-impact.md
 │   └── tech-radar-update.md
 ├── src/
 │   ├── server.py                      # FastAPI service

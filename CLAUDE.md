@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Preflight** is an EA intake and pre-assessment tool for a Dutch hospital. It takes a business request and runs it through 19 MiroFish personas (representing the full EA board + security/privacy/compliance officers) to produce board-ready architecture products (PSA, ADR, DPIA, BIA, etc.).
+**Preflight** is an EA intake and pre-assessment tool for a Dutch hospital. It takes a business request and runs it through 22 MiroFish personas (representing the full EA board + security/privacy/compliance officers) to produce board-ready architecture products (PSA, ADR, DPIA, BIA, etc.).
 
 Preflight does **not** replace the EA board — it prepares the board by doing the structured analytical work.
 
@@ -38,8 +38,9 @@ The design is split across multiple documents:
 
 - **All authority persona outputs are drafts** requiring human confirmation (sign-off workflow in UI)
 - **Hard triage floors**: clinical-system cannot be fast-tracked; patient-data always activates FG-DPO
-- **19 core personas** + 2 optional extensions (Erik/Manufacturing, Petra/R&D) — reduced from 17 to avoid noise
+- **20 core personas** + 2 optional extensions (Erik/Manufacturing, Petra/R&D) = 22 total
 - **Phase 1 starts simple**: single LLM, pgvector (not Milvus), ArchiMate parser + batched assessment + Markdown PSA output
+- **15 output products** (PSA, ADR, Clinical Impact, Process Impact, Vendor, DPIA, BIA/BIV, Integration Design, Network Impact, Security, NFR Spec, EU AI Act, Operational Readiness, Roadmap Impact, Tech Radar)
 - **Kill metric**: if false fast-track rate >10% after 3 months shadow mode, stop and reassess
 
 ### Tech Stack (planned)

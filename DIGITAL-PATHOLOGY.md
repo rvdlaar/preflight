@@ -48,7 +48,7 @@ Regulatory triggers: patient data (tissue samples, pathology reports)
 ```
 
 **Selected personas** (via `selectRelevant('clinical-system', { includeRedTeam: true })`):
-CIO, CMIO, Marcus, Thomas, Lena, Aisha, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO, Raven
+CIO, CMIO, Marcus, Marco, Sophie, Joris, Thomas, Lena, Daan, Jan, Ruben, Aisha, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO, Raven
 
 **Triage floor applied**: `clinical-system` → minimum standard review, CMIO always active, cannot be fast-tracked.
 
@@ -245,7 +245,11 @@ Each persona gets its own LLM call with their context bundle and landscape brief
 | DPIA | Yes (bijzondere persoonsgegevens) | Draft with verwerkingsregister entry, pending FG sign-off |
 | BIA/BIV | Yes (clinical diagnostics = business-critical) | B=3 (CMIO), I=3 (CMIO), V=3 (Victor/Nadia/CMIO) → BIV 3-3-3 |
 | Integration Design | Yes (Cloverleaf + PACS) | Draft: pathology results via Cloverleaf, DICOM routing for images |
+| Network Impact | Yes (DICOM images = massive traffic) | Bandwidth: 15-45 TB/year new traffic, zone placement, draft firewall rules |
 | Security Assessment | Yes (V=3) | STRIDE draft pre-filled from proposal components |
+| NFR Specification | Yes (high impact, BIV 3-3-3) | Availability ≥99.5%, RPO/RTO ≤1h, response time for 1GB slide viewer |
+| Process Impact | Yes (pathologist workflow changes) | As-is/to-be pathology workflow, handovers, exception paths, transition state |
+| Operational Readiness | Yes (production clinical system) | Monitoring, backup, patching, on-call, DR tier 1 alignment |
 | Tech Radar Update | Yes (new technology) | "Sysmex Digital Pathology — ASSESS — pending vendor viability and clinical validation" |
 
 ### Diagrams Generated

@@ -210,18 +210,20 @@ Defined in `personas/ea-council-personas.mjs`. Each carries: `role`, `name`, `in
 
 ### Persona Routing
 
-Not every request needs 15 opinions. `selectRelevant()` maps request type to persona subset:
+Not every request needs 22 opinions. `selectRelevant()` maps request type to persona subset (typically 10-16 per request):
 
 | Request Type | Who's in the Room |
 |-------------|-------------------|
-| `new-application` | CIO, Marcus, Sophie, Thomas, Lena, Jan, Aisha, Victor, ISO-Officer, Nadia, FG-DPO, PO |
-| `clinical-system` | CIO, CMIO, Marcus, Thomas, Lena, Aisha, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO |
-| `vendor-selection` | CIO, Marcus, Thomas, Lena, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO |
-| `infrastructure-change` | Marcus, Jan, Victor, ISO-Officer, Nadia |
-| `integration` | Marcus, Thomas, Lena, Victor, ISO-Officer, Nadia |
-| `data-platform` | Marcus, Aisha, Jan, Victor, ISO-Officer, Nadia, FG-DPO, PO |
-| `ai-ml` | CIO, Marcus, Aisha, Thomas, Victor, CISO, Nadia, FG-DPO, PO |
-| `decommission` | Marcus, Thomas, Lena, Jan, Nadia, FG-DPO |
+| `new-application` | CIO, Marcus, Marco, Sophie, Joris, Thomas, Lena, Daan, Jan, Ruben, Aisha, Victor, ISO-Officer, Nadia, FG-DPO, PO |
+| `clinical-system` | CIO, CMIO, Marcus, Marco, Sophie, Joris, Thomas, Lena, Daan, Jan, Ruben, Aisha, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO |
+| `vendor-selection` | CIO, Marcus, Marco, Thomas, Lena, Victor, CISO, ISO-Officer, Nadia, FG-DPO, PO |
+| `infrastructure-change` | Marcus, Jan, Ruben, Victor, ISO-Officer, Nadia, FG-DPO |
+| `integration` | Marcus, Thomas, Joris, Lena, Daan, Ruben, Victor, ISO-Officer, Nadia |
+| `data-platform` | Marcus, Aisha, Daan, Jan, Ruben, Victor, ISO-Officer, Nadia, FG-DPO, PO |
+| `ai-ml` | CIO, Marcus, Marco, Aisha, Daan, Thomas, Victor, CISO, Nadia, FG-DPO, PO |
+| `decommission` | Marcus, Thomas, Lena, Jan, Daan, Femke, Nadia, FG-DPO |
+| `architecture-roadmap` | Marcus, Femke, Sophie, Thomas, Jan, Marco |
+| `capability-assessment` | Marcus, Femke, Sophie, Thomas, Aisha, Daan |
 
 **Governance baseline**: Marcus, Victor, Nadia, and FG-DPO are always in the room (fallback for unknown types).
 
