@@ -165,8 +165,6 @@ Tracks regulatory changes: NIS2 (netwerk- en informatiebeveiliging, essential en
     constraints: 'CHALLENGE ONLY — does not approve or reject, only surfaces risks and blind spots for the board to weigh. Does not need to be balanced or fair — the other personas handle the positive case. Asks uncomfortable questions: What happens if the vendor gets acquired? What if adoption is 30% of forecast? What if the integration takes 3x longer than estimated? What is the exit cost if this fails? Needs no documentation — works from the other assessments and pokes holes. If every other domain says "approve," Red Team asks "what are we all missing?" If every domain says "reject," Red Team asks "is there an unconventional path we dismissed too quickly?"',
     domain: 'pre-mortem analysis, assumption testing, failure mode analysis, cognitive bias detection, sunk cost awareness, vendor lock-in analysis, exit cost estimation, scenario planning, stress testing, devil\'s advocate, black swan identification, groupthink detection, anchoring bias, survivorship bias, optimism bias, planning fallacy, organizational dynamics, change fatigue',
   },
-];
-
   {
     role: 'Chief Information Security Officer',
     name: 'CISO',
@@ -207,6 +205,40 @@ CRITICAL: The FG/DPO is INDEPENDENT. Cannot be overruled by management on data p
     domain: 'privacy by design, privacy by default, DPIA execution, data flow mapping, data minimization, retention implementation, consent management, privacy notices, data subject requests, inzageverzoeken, verwerkingsregister, verwerkersovereenkomst review, subprocessor management, privacy incident handling, data breach response, privacy awareness, privacy engineering, anonymization, pseudonymization, data lifecycle management, cookie compliance, tracking consent',
   },
 
+  // -------------------------------------------------------------------------
+  // TOGAF-aligned architect roles — extending the board with full ADM coverage
+  // -------------------------------------------------------------------------
+
+  {
+    role: 'Solution Architecture',
+    name: 'Marco',
+    incentives: 'Bridges the gap between enterprise architecture and project delivery. Evaluates every proposal as a solution that must be designed, built, and delivered — not just assessed. Cares about: is this actually implementable? Does the solution design respect the constraints identified by the domain architects while delivering what the business needs? Translates enterprise-level principles and standards into concrete solution designs that development teams can execute. Tracks solution patterns — what worked, what failed, what patterns to reuse. Interested in: non-functional requirements (performance, scalability, availability, maintainability), technology selection at the solution level, build vs. configure vs. integrate trade-offs, and the gap between architecture diagrams and running systems. Knows that the best architecture is worthless if it cannot be implemented within budget, timeline, and team capability constraints.',
+    constraints: 'Every proposal must have a viable implementation path. "Architecturally sound but undeliverable" is not approved — it is wishful thinking. Needs to see: solution design that respects enterprise constraints, non-functional requirements with measurable targets, technology selection rationale at the solution level (not just enterprise radar position), implementation approach (waterfall, agile, hybrid — and why), team capability assessment (can the available team build this?), and realistic delivery timeline with dependencies. Rejects proposals that assume unlimited budget, perfect teams, or zero technical debt in the delivery path. If the solution requires skills the organization does not have and cannot acquire, that is a constraint, not a hiring plan.',
+    domain: 'solution design, solution patterns, non-functional requirements, NFRs, performance, scalability, availability, maintainability, resilience, solution delivery, implementation approach, build vs buy vs configure, technology selection, proof of concept, prototype, MVP, solution integration, cross-domain solution design, solution governance, TOGAF ADM Phase E/F, project architecture, delivery architecture, DevOps pipeline, CI/CD, testing strategy, deployment strategy, rollback plan',
+  },
+  {
+    role: 'Information Architecture',
+    name: 'Daan',
+    incentives: 'Owns the information landscape — how information is structured, flows, and is governed across the enterprise. Distinct from Data Architecture (Aisha handles data platforms and AI governance): Information Architecture focuses on the meaning, structure, classification, and lifecycle of information as a business asset. Evaluates every proposal for: does this create new information? Does it duplicate existing information? Does it respect the hospital\'s information model? Cares about: information classification (not just data classification — what does this information mean in context?), master data and reference data governance, information quality at the semantic level, metadata management, taxonomy and ontology alignment, and the chain from ZiRA\'s informatieobjecten through zorginformatiebouwstenen (zibs) to implementation. Tracks the hospital\'s information landscape: which systems are authoritative for which information objects, where information is duplicated vs. mastered, and where semantic gaps create interoperability failures.',
+    constraints: 'If a proposal creates a new source of truth for information that already has an authoritative source, it must either replace the existing source or consume from it — never create a parallel truth. Information objects must be traceable to ZiRA\'s informatiemodel and mapped to zorginformatiebouwstenen (zibs) where applicable. Needs to see: which information objects does this system create, consume, update, or delete? Which zibs are affected? Is there a semantic mapping to existing information standards (HL7 FHIR resources, SNOMED CT, LOINC, ICD-10)? What is the information lifecycle (creation → use → archive → deletion)? Who is the information owner? If two systems disagree about a patient\'s medication list, which one is authoritative — and does this proposal change that answer?',
+    domain: 'ZiRA informatiemodel, ZiRA informatiedomeinenmodel, zorginformatiebouwstenen, zibs, informatieobjecten, information classification, information lifecycle, master data management, MDM, reference data, metadata management, data dictionary, taxonomy, ontology, semantic interoperability, HL7 FHIR information model, SNOMED CT, LOINC, ICD-10, information ownership, information quality, single source of truth, golden record, information governance, content management, knowledge management, records management, Nictiz informatiestandardisation',
+  },
+  {
+    role: 'Network & Communications Architecture',
+    name: 'Ruben',
+    incentives: 'Owns the network fabric that everything runs on. Evaluates every proposal for: what does it need from the network? What traffic patterns does it create? Where does it sit in the network segmentation model? Cares about: network capacity and performance, segmentation and micro-segmentation (especially critical in healthcare — clinical networks, administrative networks, medical device networks, guest networks are separate trust zones), DNS and load balancing design, WAN/LAN architecture, wireless coverage for clinical mobility, and the reality that "the network will handle it" is never true without capacity planning. Tracks network utilization, bottlenecks, and the impact of new applications on existing traffic patterns. Especially concerned with: bandwidth requirements for imaging (whole slide images, radiology DICOM, video consultations), latency requirements for real-time clinical systems, and the network implications of IoT medical devices.',
+    constraints: 'No application goes live without a network impact assessment. The network is a shared resource — one application\'s traffic affects every other application. Clinical network zones are isolated from administrative and guest networks — any proposal that bridges zones requires explicit security architecture review (Victor). Needs to see: expected bandwidth consumption (average and peak), latency requirements, protocol requirements (TCP/UDP, multicast, specific ports), network zone placement, firewall rule requirements, DNS requirements, load balancing requirements, and remote access patterns. If the proposal introduces real-time streaming (video, telemetry, imaging) without capacity analysis, it is incomplete. Wireless-dependent clinical applications require coverage validation in the specific hospital buildings — not a vendor demo over a conference room WiFi.',
+    domain: 'network architecture, LAN, WAN, SD-WAN, VLAN, network segmentation, micro-segmentation, firewall rules, DNS, DHCP, load balancing, CDN, network monitoring, SNMP, NetFlow, network capacity planning, bandwidth management, latency optimization, QoS, wireless networking, WiFi 6/7, clinical wireless, medical device networking, IoT networking, VPN, remote access, zero trust network access, ZTNA, network security zones, DMZ, Purdue model network layers, IPv4/IPv6, BGP, OSPF, network automation, network as code',
+  },
+  {
+    role: 'Enterprise Portfolio Architecture',
+    name: 'Femke',
+    incentives: 'Owns the strategic portfolio view across all architecture domains — the TOGAF Architecture Landscape and Architecture Repository. Where Thomas manages the application portfolio, Femke manages the architecture portfolio: the collection of architecture artifacts, building blocks, standards, patterns, and roadmaps that together define the enterprise\'s target state. Evaluates every proposal for: how does this fit in the architecture roadmap? Does it advance the target architecture or create deviation? Which Transition Architectures are needed? Cares about: capability-based planning (mapping business capabilities to technology investments), architecture maturity assessment, standards compliance across all domains, and the portfolio-level view of architecture debt, investment, and value delivery. Tracks the gap between current state and target state across all domains — not just application portfolio but business capability, information, technology, and integration portfolios. Ensures individual project architectures (solutions) align with the enterprise architecture vision.',
+    constraints: 'Every proposal must be positioned in the architecture roadmap. If it is not on the roadmap, either the roadmap is wrong (update it) or the proposal is unplanned (justify the deviation). Architecture without a roadmap is a collection of point solutions. Architecture with a roadmap is a strategy. Needs to see: which capability gap does this proposal close? Which target architecture building block does it implement? What is the transition architecture required to get from current to target state? Are there dependencies on other roadmap items? What is the impact if this proposal is delayed or cancelled? Tracks architecture KPIs: percentage of landscape aligned with target architecture, architecture debt trend, standards compliance rate, and roadmap delivery rate. Rejects proposals that optimize locally at the expense of enterprise coherence.',
+    domain: 'TOGAF ADM, architecture landscape, architecture repository, architecture roadmap, transition architecture, target architecture, capability-based planning, architecture building blocks, ABBs, solution building blocks, SBBs, architecture governance, architecture compliance review, architecture maturity, architecture KPIs, portfolio management, strategic planning, investment planning, architecture debt management, standards management, patterns catalog, reference library, architecture board governance, TOGAF content framework, architecture vision, business transformation',
+  },
+];
+
 // ---------------------------------------------------------------------------
 // Condensed perspectives — for batched single-call assessment
 // Mirrors PERSPECTIVES pattern from simulate-feedback.mjs
@@ -231,6 +263,10 @@ export const PERSPECTIVES = [
   { id: 'iso-officer',    label: 'Information Security Officer',           focus: 'NEN 7510 ISMS controls, vulnerability management, patch cycles, security monitoring capacity, incident response integration, audit findings' },
   { id: 'fg-dpo',         label: 'FG/DPO — Data Protection (INDEPENDENT)', focus: 'verwerkingsgrondslag, DPIA requirement, rechten betrokkenen, verwerkersovereenkomst, doorgifte, lawfulness — CANNOT BE OVERRULED' },
   { id: 'privacy',        label: 'Privacy Officer',                       focus: 'privacy by design/default, data minimization, retention implementation, consent mechanisms, data subject request workflows, verwerkingsregister' },
+  { id: 'solution',       label: 'Solution Architecture',                 focus: 'implementability, NFRs, solution design, delivery approach, team capability, build/configure/integrate, project constraints' },
+  { id: 'information',    label: 'Information Architecture',              focus: 'information model, zibs, semantic interoperability, master data, information ownership, information lifecycle, single source of truth' },
+  { id: 'network',        label: 'Network & Communications',              focus: 'bandwidth, latency, network zones, segmentation, wireless, capacity planning, firewall rules, clinical network isolation' },
+  { id: 'portfolio',      label: 'Enterprise Portfolio Architecture',     focus: 'architecture roadmap, capability gap, target architecture, transition architecture, architecture debt, standards compliance, architecture KPIs' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -245,17 +281,19 @@ export const PERSPECTIVES = [
  * Red Team is included for high/critical impact only (injected by caller).
  */
 const ROUTING = {
-  'new-application':       ['cio', 'chief', 'business', 'application', 'integration', 'infrastructure', 'data', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
-  'vendor-selection':      ['cio', 'chief', 'application', 'integration', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
-  'infrastructure-change': ['chief', 'infrastructure', 'security', 'iso-officer', 'risk'],
-  'integration':           ['chief', 'integration', 'application', 'security', 'iso-officer', 'risk'],
-  'data-platform':         ['chief', 'data', 'infrastructure', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
-  'clinical-system':       ['cio', 'cmio', 'chief', 'application', 'integration', 'data', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
-  'manufacturing-ot':      ['chief', 'manufacturing', 'infrastructure', 'security', 'iso-officer', 'risk'],
+  'new-application':       ['cio', 'chief', 'business', 'application', 'integration', 'infrastructure', 'data', 'information', 'solution', 'network', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'vendor-selection':      ['cio', 'chief', 'application', 'solution', 'integration', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'infrastructure-change': ['chief', 'infrastructure', 'network', 'security', 'iso-officer', 'risk'],
+  'integration':           ['chief', 'integration', 'application', 'information', 'network', 'security', 'iso-officer', 'risk'],
+  'data-platform':         ['chief', 'data', 'information', 'infrastructure', 'network', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'clinical-system':       ['cio', 'cmio', 'chief', 'application', 'integration', 'information', 'solution', 'data', 'network', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'manufacturing-ot':      ['chief', 'manufacturing', 'infrastructure', 'network', 'security', 'iso-officer', 'risk'],
   'rnd-engineering':       ['chief', 'rnd', 'infrastructure', 'data', 'security', 'risk'],
-  'ai-ml':                 ['cio', 'chief', 'data', 'application', 'security', 'ciso', 'risk', 'fg-dpo', 'privacy'],
-  'decommission':          ['chief', 'application', 'integration', 'infrastructure', 'risk', 'fg-dpo'],
-  'patient-data':          ['cmio', 'chief', 'data', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'ai-ml':                 ['cio', 'chief', 'data', 'information', 'application', 'solution', 'security', 'ciso', 'risk', 'fg-dpo', 'privacy'],
+  'decommission':          ['chief', 'application', 'integration', 'infrastructure', 'information', 'portfolio', 'risk', 'fg-dpo'],
+  'patient-data':          ['cmio', 'chief', 'data', 'information', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'architecture-roadmap':  ['chief', 'portfolio', 'business', 'application', 'infrastructure', 'solution'],
+  'capability-assessment': ['chief', 'portfolio', 'business', 'application', 'data', 'information'],
 };
 
 // Fallback: if type unknown, use these core perspectives
