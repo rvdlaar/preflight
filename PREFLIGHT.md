@@ -461,6 +461,8 @@ Retrieval is persona-scoped: Victor gets security controls, Nadia gets regulator
 
 ## Integrations
 
+**Preflight makes your existing tools useful.** It doesn't replace them — it's the front door they're all missing.
+
 | System | Technology | What Preflight Gets |
 |--------|-----------|-------------------|
 | **Archi** | .archimate XML parser | Application landscape, capabilities, interfaces, tech stack, relationships, cascade dependencies |
@@ -504,6 +506,21 @@ When an authority persona produces a finding:
 
 The human confirmation step is not optional. It is built into the workflow. The UI requires sign-off from the relevant authority role before the assessment can move to BOARD-READY.
 
+### Architect Input Markers
+
+When a persona assessment is generic (because landscape context is missing) or when a finding requires human validation that AI cannot provide, the output explicitly calls it out:
+
+```
+### CMIO: CONDITIONAL
+Clinical validation studies required for diagnostic equivalence.
+
+[ARCHITECT INPUT NEEDED: Has the pathology department been consulted?
+How many pathologists support this transition? Which tissue types
+are in scope for the initial deployment?]
+```
+
+These markers prevent rubber-stamping. They force the architect to engage with the output rather than forwarding it unchanged to the board. If a PSA still contains `[ARCHITECT INPUT NEEDED]` markers, it cannot move to BOARD-READY.
+
 ---
 
 ## Why Not Power Platform?
@@ -543,8 +560,15 @@ Build:
 - Markdown output: landscape brief + draft PSA with persona-attributed findings
 - PostgreSQL with pgvector (no Milvus yet)
 - Quick Scan pre-screening
+- Built-in regulatory knowledge base (ships with distribution, no setup):
+  - ZiRA v1.4 (bedrijfsfunctiemodel, informatiedomeinenmodel, procesmodel, 12 principes)
+  - NEN 7510 controls (mapped to assessment scenarios)
+  - AIVG 2022 + Module ICT (checklist items with guidance)
+  - AVG/GDPR (verwerkingsgrondslagen, DPIA triggers, rechten betrokkenen)
+  - NIS2 (essential entity requirements for healthcare)
+- Document folder ingestion (`preflight ingest <folder>`)
 
-**NOT in Phase 1**: Deep mode, document parsing, embedding pipeline, Milvus, frontend UI, auth, audit trail, integrations beyond Archi.
+**NOT in Phase 1**: Deep mode, Milvus, frontend UI, auth, audit trail, integrations beyond Archi.
 
 **Validation**: Run 5 real past proposals with known board outcomes. If triage matches board treatment on ≥3 of 5, proceed. If <3, reassess the approach before building further.
 
