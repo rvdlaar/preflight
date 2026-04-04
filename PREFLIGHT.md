@@ -173,6 +173,7 @@ Defined in `personas/ea-council-personas.mjs`. Each carries: `role`, `name`, `in
 | Chief Architect | Marcus | ZiRA coherence, capability map, architecture debt, ADR register, principetoets | Final recommendation |
 | Solution Architecture | Marco | Implementability, NFRs, solution design, delivery approach, team capability | — |
 | Business Architecture | Sophie | Strategy alignment, bedrijfsfunctiemodel, dienstenmodel, waardepropositie, organizational change | — |
+| Business Process Architecture | Joris | BPMN, process impact, as-is/to-be, handovers, bottlenecks, clinical pathways, exception handling | — |
 | Application Architecture | Thomas | Portfolio overlap, tech radar, build/buy/SaaS, AIVG exit clauses, vendor viability | — |
 | Integration Architecture | Lena | API standards, coupling risk, data flows, cascade dependencies, integration effort | — |
 | Information Architecture | Daan | Information model, zibs, semantic interoperability, master data, information ownership | — |

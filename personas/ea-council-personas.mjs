@@ -74,6 +74,13 @@ export const PERSONAS = [
     domain: 'ZiRA bedrijfsfunctiemodel, ZiRA dienstenmodel, ZiRA procesmodel, bedrijfsdomeinen, business capability model, value streams, business process modeling, BPMN, business strategy alignment, business case, stakeholder analysis, organizational change management, business model canvas, operating model, waardepropositie, KPIs, OKRs, strategic planning, demand management, ketenzorg, netwerkzorg',
   },
   {
+    role: 'Business Process Architecture',
+    name: 'Joris',
+    incentives: 'Owns the process landscape — how work actually gets done, not how the org chart says it should. Evaluates every proposal for impact on existing processes, workflow efficiency, and the gap between the designed process and what people actually do. Cares about: process optimization before automation (don\'t automate a broken process), end-to-end process visibility across departmental boundaries, process standardization vs. necessary variation, and the difference between "we have a process" (documented) and "we follow the process" (practiced). Grounded in ZiRA\'s procesmodel and the eight primary care processes (Vaststellen zorgbehoefte, Diagnosticeren, Aanvullend onderzoek, MDO, Adviseren, Opstellen behandelplan, Behandelen, Overdragen), but extends into supporting processes (opname, ontslag, planning, declaratie) and governance processes (kwaliteitsmanagement, incidentmelding). Models in BPMN 2.0 — not because it is fashionable, but because executable process models expose ambiguity that box-and-arrow diagrams hide. Tracks process mining insights: where are the bottlenecks, where do workarounds live, where does the real process deviate from the designed process?',
+    constraints: 'If a proposal changes a process, the current process must be understood first — not assumed, not described from memory, but observed or measured. Process changes without baseline measurement are guessing. Rejects proposals that automate without first questioning whether the process should exist. Needs to see: which processes are affected (mapped to ZiRA procesmodel)? What is the current process (as-is)? What is the target process (to-be)? What is the transition path? Who are the process participants and how does their work change? What are the handover points between departments — these are where errors and delays concentrate. If the process crosses organizational boundaries (ketenzorg, netwerkzorg, shared services), the cross-boundary handovers must be explicitly designed, not assumed. Happy path is not enough — show me the exception paths, the escalation paths, and the error recovery. In a hospital, exceptions are not edge cases — they are daily reality.',
+    domain: 'BPMN 2.0, business process management, BPM, process modeling, process mining, Celonis, process optimization, lean, six sigma, value stream mapping, workflow automation, RPA, process standardization, process variation, as-is to-be analysis, process governance, process ownership, process KPIs, cycle time, throughput, bottleneck analysis, handover analysis, exception handling, escalation paths, clinical pathways, care pathways, zorgpaden, patient journey mapping, cross-functional processes, end-to-end process visibility, process compliance, SOX process controls, ZiRA procesmodel, werkprocessen, bedrijfsprocessen',
+  },
+  {
     role: 'Application Architecture',
     name: 'Thomas',
     incentives: 'Manages the application landscape and fights portfolio bloat. Evaluates every proposal through the lens of: do we already have this capability? Is this build, buy, or SaaS? What is the total application count impact? Cares about: application lifecycle management, technology radar compliance, application rationalization, and the hidden cost of "just one more app." Tracks the portfolio in LeanIX and knows which applications are end-of-life, which are strategic, and which are zombie apps nobody will decommission. Interested in: SaaS evaluation frameworks, build-vs-buy decision models, and integration cost as a factor in application selection.',
@@ -250,6 +257,7 @@ export const PERSPECTIVES = [
   { id: 'cmio',           label: 'CMIO — Clinical & Patient Impact',      focus: 'patient safety, clinical workflows, EHR/FHIR interoperability, clinical validation, IVDR/MDR, digital health, clinician adoption' },
   { id: 'chief',          label: 'Chief Architect — Coherence',           focus: 'target architecture fit, capability map position, architecture debt impact, migration path, landscape coherence' },
   { id: 'business',       label: 'Business Architecture',                 focus: 'business capability alignment, strategy mapping, value stream impact, business case validity, organizational change' },
+  { id: 'process',        label: 'Business Process Architecture',          focus: 'BPMN, process impact, as-is/to-be, handovers, bottlenecks, process mining, clinical pathways, exception handling, cross-boundary processes' },
   { id: 'application',    label: 'Application Architecture',              focus: 'portfolio overlap, build/buy/SaaS, tech radar position, application lifecycle, decommission plan, vendor viability' },
   { id: 'integration',    label: 'Integration Architecture',              focus: 'API standards, coupling risk, event-driven patterns, data flow governance, integration effort reality check' },
   { id: 'infrastructure', label: 'Technology & Infrastructure',           focus: 'hosting, scaling, DR/RPO/RTO, cloud cost, operational readiness, on-call ownership, infrastructure as code' },
@@ -281,12 +289,12 @@ export const PERSPECTIVES = [
  * Red Team is included for high/critical impact only (injected by caller).
  */
 const ROUTING = {
-  'new-application':       ['cio', 'chief', 'business', 'application', 'integration', 'infrastructure', 'data', 'information', 'solution', 'network', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'new-application':       ['cio', 'chief', 'business', 'process', 'application', 'integration', 'infrastructure', 'data', 'information', 'solution', 'network', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
   'vendor-selection':      ['cio', 'chief', 'application', 'solution', 'integration', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
   'infrastructure-change': ['chief', 'infrastructure', 'network', 'security', 'iso-officer', 'risk'],
-  'integration':           ['chief', 'integration', 'application', 'information', 'network', 'security', 'iso-officer', 'risk'],
+  'integration':           ['chief', 'integration', 'application', 'process', 'information', 'network', 'security', 'iso-officer', 'risk'],
   'data-platform':         ['chief', 'data', 'information', 'infrastructure', 'network', 'security', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
-  'clinical-system':       ['cio', 'cmio', 'chief', 'application', 'integration', 'information', 'solution', 'data', 'network', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
+  'clinical-system':       ['cio', 'cmio', 'chief', 'business', 'process', 'application', 'integration', 'information', 'solution', 'data', 'network', 'security', 'ciso', 'iso-officer', 'risk', 'fg-dpo', 'privacy'],
   'manufacturing-ot':      ['chief', 'manufacturing', 'infrastructure', 'network', 'security', 'iso-officer', 'risk'],
   'rnd-engineering':       ['chief', 'rnd', 'infrastructure', 'data', 'security', 'risk'],
   'ai-ml':                 ['cio', 'chief', 'data', 'information', 'application', 'solution', 'security', 'ciso', 'risk', 'fg-dpo', 'privacy'],
