@@ -1,0 +1,125 @@
+{
+  "description": "Ground-truth QA pairs for Preflight pipeline evaluation. Each question has known-relevant source_ids from the 6 ingested documents.",
+  "questions": [
+    {
+      "question": "Wat zijn de eisen voor toegangsbeheer in NEN 7510?",
+      "relevant_source_ids": ["NEN-7510-1-2024", "NEN-7510-2-2024"],
+      "relevant_sections": ["Toegangsbeheer", "Access control"],
+      "persona_id": "victor",
+      "language": "nl",
+      "difficulty": "easy"
+    },
+    {
+      "question": "Welke maatregelen vallen onder beheersmaatregel 08.01 uit NEN 7510-2?",
+      "relevant_source_ids": ["NEN-7510-2-2024"],
+      "relevant_sections": ["08.01"],
+      "persona_id": "victor",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Hoe wordt cryptografie geregeld in de NEN 7510 norm?",
+      "relevant_source_ids": ["NEN-7510-1-2024", "NEN-7510-2-2024"],
+      "relevant_sections": ["Cryptografie", "Crypto"],
+      "persona_id": "victor",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Wat zijn de vereisten voor audit logging volgens NEN 7513?",
+      "relevant_source_ids": ["NEN-7513-2024"],
+      "relevant_sections": ["Audit logging", "Logbeheer"],
+      "persona_id": "nadia",
+      "language": "nl",
+      "difficulty": "easy"
+    },
+    {
+      "question": "Hoe lang moeten audit logs bewaard worden volgens NEN 7513?",
+      "relevant_source_ids": ["NEN-7513-2024"],
+      "relevant_sections": ["Bewaartermijn", "Retentie"],
+      "persona_id": "nadia",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Wat is het NAR framework en hoe zijn de kolommen gestructureerd?",
+      "relevant_source_ids": ["Novius-NAM"],
+      "relevant_sections": ["NAR", "Novius Architectuur Raamwerk"],
+      "persona_id": "arjen",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Hoe beschrijft de Novius Architectuur Methode het ontwikkelen van een architectuur?",
+      "relevant_source_ids": ["Novius-NAM"],
+      "relevant_sections": ["Ontwikkelen van een architectuur", "NAM werkwijze"],
+      "persona_id": "arjen",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Wat is de relatie tussen bedrijfsfuncties en informatievoorziening in het NAR?",
+      "relevant_source_ids": ["Novius-NAM"],
+      "relevant_sections": ["Bedrijfsfuncties", "Informatievoorziening", "NAR kolom 2", "NAR kolom 3"],
+      "persona_id": "arjen",
+      "language": "nl",
+      "difficulty": "hard"
+    },
+    {
+      "question": "Welke eisen stelt NEN 7512 aan cloudserviceproviders?",
+      "relevant_source_ids": ["NEN-7512-2022"],
+      "relevant_sections": ["Cloud", "Cloudserviceprovider"],
+      "persona_id": "victor",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Wat zijn de verplichtingen rondom verwerkersovereenkomsten in NEN 7512?",
+      "relevant_source_ids": ["NEN-7512-2022"],
+      "relevant_sections": ["Verwerkersovereenkomst", "Verwerker"],
+      "persona_id": "nadia",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Hoe gaat NTA 7516 om met risicomanagement voor medische technologie?",
+      "relevant_source_ids": ["NTA-7516-2019"],
+      "relevant_sections": ["Risicomanagement", "Risicoanalyse"],
+      "persona_id": "nadia",
+      "language": "nl",
+      "difficulty": "hard"
+    },
+    {
+      "question": "Wat is de Projectstartarchitectuur volgens de Novius methode?",
+      "relevant_source_ids": ["Novius-NAM"],
+      "relevant_sections": ["PSA", "Projectstartarchitectuur", "Bijlage 1"],
+      "persona_id": "arjen",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Hoe wordt patiëntveiligheid gewaarborgd bij logging van toegang tot medische data?",
+      "relevant_source_ids": ["NEN-7513-2024", "NEN-7510-2-2024"],
+      "relevant_sections": ["Patiëntrouwheid", "Audit", "Privacy en bescherming van persoonsgegevens"],
+      "persona_id": "fg-dpo",
+      "language": "nl",
+      "difficulty": "hard"
+    },
+    {
+      "question": "Wat zijn de controles voor netwerksegmentatie in NEN 7510-2?",
+      "relevant_source_ids": ["NEN-7510-2-2024"],
+      "relevant_sections": ["Netwerksegmentatie", "Netwerkbeveiliging"],
+      "persona_id": "victor",
+      "language": "nl",
+      "difficulty": "medium"
+    },
+    {
+      "question": "Hoe beschrijft Novius de dienstencatalogus en het service model?",
+      "relevant_source_ids": ["Novius-NAM"],
+      "relevant_sections": ["Services", "Dienstencatalogus", "SOA"],
+      "persona_id": "arjen",
+      "language": "nl",
+      "difficulty": "hard"
+    }
+  ]
+}

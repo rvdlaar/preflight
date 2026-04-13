@@ -1,13 +1,13 @@
 # Project Start Architectuur (PSA)
 
-**Voorstel / Proposal:** [voorstel naam]
-**Versie / Version:** [1.0]
-**Datum / Date:** [YYYY-MM-DD]
-**Status:** [DRAFT | ASSESSED | BOARD-READY | DECIDED]
-**Architect:** [naam verantwoordelijk architect]
-**Aanvrager / Requestor:** [naam, afdeling]
-**Beoordeling / Assessment mode:** [Fast (batched) | Deep (panel)]
-**BIV-classificatie:** [B=_ I=_ V=_]
+**Voorstel / Proposal:** {{ proposal_name }}
+**Versie / Version:** {{ version }}
+**Datum / Date:** {{ date }}
+**Status:** {{ status }}
+**Architect:** {{ architect_name }}
+**Aanvrager / Requestor:** {{ requestor_name_dept }}
+**Beoordeling / Assessment mode:** {{ assessment_mode }}
+**BIV-classificatie:** {{ biv_classification }}
 
 > *Dit is een conceptbeoordeling gegenereerd door Preflight. De architect beoordeelt en is eigenaar van de definitieve beoordeling. Het architectuurboard is eigenaar van het besluit.*
 >
@@ -17,257 +17,103 @@
 
 ## 1. Managementsamenvatting / Executive Summary
 
-[Beknopte samenvatting in 3-5 zinnen. Wat wordt voorgesteld, waarom, wat zijn de belangrijkste bevindingen, en wat is de aanbeveling?]
+**Aanbeveling / Recommendation:** {{ recommendation }}
+**Geschatte boardtijd / Estimated board time:** {{ board_time }}
+**Type:** {{ request_type }} | **Impact:** {{ impact_level }} | **Triage:** {{ triage_treatment }}
 
-[Concise summary in 3-5 sentences. What is proposed, why, what are the key findings, and what is the recommendation?]
-
-**Aanbeveling / Recommendation:** [Goedkeuren | Goedkeuren met voorwaarden | Afwijzen | Uitstellen]
-**Geschatte boardtijd / Estimated board time:** [15 min | 30 min | volledige sessie]
+Overzicht: {{ blocks_count }} blokkade(s), {{ concerns_count }} bezorgdheid(en), {{ conditionals_count }} voorwaardelijk, {{ approves_count }} akkoord.
 
 ---
 
 ## 2. Context en Aanleiding / Context and Rationale
 
+<!-- ARCHITECT INPUT NEEDED: Vul bedrijfsprobleem, huidige situatie, gewenste situatie in -->
+
 ### 2.1 Bedrijfsprobleem / Business Problem
 
-[Welk probleem lost dit voorstel op? Beschrijf vanuit het perspectief van de zorgverlening, niet vanuit de oplossing.]
+[ARCHITECT INPUT NEEDED: Welk probleem lost dit voorstel op?]
 
 ### 2.2 Huidige Situatie / Current State
 
-[Hoe wordt het probleem nu opgelost? Welke systemen, processen en workarounds zijn in gebruik?]
+[ARCHITECT INPUT NEEDED: Hoe wordt het probleem nu opgelost?]
 
 ### 2.3 Gewenste Situatie / Desired State
 
-[Wat verandert er? Welk resultaat wordt verwacht?]
-
-### 2.4 Scope en Afbakening / Scope
-
-| In scope | Buiten scope |
-|----------|-------------|
-| [item]   | [item]      |
-
-### 2.5 Stakeholders
-
-| Rol | Naam | Belang |
-|-----|------|--------|
-| Business sponsor | [naam] | [belang] |
-| Eindgebruikers / End users | [groep, aantal] | [belang] |
-| Leverancier / Vendor | [naam] | [belang] |
+[ARCHITECT INPUT NEEDED: Wat verandert er? Welk resultaat wordt verwacht?]
 
 ---
 
-## 3. ZiRA Positionering / ZiRA Positioning
-
-### 3.1 Bedrijfsdomein / Business Domain
-
-**Primair domein:** [Zorg | Onderzoek | Onderwijs | Sturing | Bedrijfsondersteuning]
-**Secundair domein(en):** [indien van toepassing]
-
-### 3.2 Bedrijfsfuncties / Business Functions
-
-| Bedrijfsfunctie | Domein | Impact |
-|-----------------|--------|--------|
-| [functie uit ZiRA bedrijfsfunctiemodel] | [domein] | [nieuw | gewijzigd | geraakt] |
-
-### 3.3 Diensten / Services
-
-| Dienst | Type | Impact |
-|--------|------|--------|
-| [dienst uit ZiRA dienstenmodel] | [Primair | Ondersteunend | Sturing] | [nieuw | gewijzigd | geraakt] |
-
-### 3.4 Zorgprocessen / Care Processes
-
-| Proces (niveau 1) | Werkproces | Impact |
-|--------------------|-----------|--------|
-| [bijv. Diagnosticeren] | [werkproces] | [nieuw | gewijzigd | geraakt] |
-
-*ZiRA primaire bedrijfsprocessen: Vaststellen zorgbehoefte, Diagnosticeren, Aanvullend onderzoek, MDO, Adviseren, Opstellen behandelplan, Behandelen, Overdragen*
-
-### 3.5 Informatiedomeinen / Information Domains
-
-| Informatiedomein | Informatieobjecten | Classificatie |
-|------------------|--------------------|---------------|
-| [domein uit ZiRA] | [objecten] | [bijzondere persoonsgegevens | persoonsgegevens | bedrijfsgegevens] |
-
-### 3.6 Applicatiefuncties / Application Functions
-
-| Applicatiefunctie (ZiRA) | Huidige invulling | Voorstel |
-|--------------------------|-------------------|----------|
-| [functie uit ZiRA applicatiefunctiemodel] | [huidige applicatie of geen] | [voorgestelde applicatie] |
-
----
-
-## 4. Applicatielandschap / Application Landscape
-
-### 4.1 Bestaand Landschap / Existing Landscape
-
-*Bron: Archi-model en TOPdesk CMDB*
-
-| Applicatie | Status | Overlap | Relatie tot voorstel |
-|-----------|--------|---------|---------------------|
-| [applicatie uit Archi] | [In gebruik | Uitfasering | Gepland] | [Vervangt | Aanvult | Raakt | Geen] |
-
-### 4.2 Integraties / Integrations
-
-```
-[Integratieoverzicht: welke systemen worden gekoppeld, via welk protocol]
-
-Voorbeeld:
-[Voorstel] ──HL7v2──► Cloverleaf ──FHIR──► EPD
-[Voorstel] ──REST──► JiveX PACS
-```
-
-### 4.3 Cascade-afhankelijkheden / Cascade Dependencies
-
-| Bron | Doel | Type | Impact bij uitval |
-|------|------|------|-------------------|
-| [systeem] | [systeem] | [Serving | Flow | Triggering] | [beschrijving] |
-
----
-
-## 5. Principetoets / Principle Assessment
+## 3. Principetoets / Principle Assessment
 
 Toetsing aan de 12 ZiRA architectuurprincipes.
 
-| # | Principe | Beoordeling | Toelichting |
-|---|----------|-------------|-------------|
-| 1 | **Waardevol** — Waarde toevoegen, aansluiten bij organisatiedoelen | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 2 | **Veilig en vertrouwd** — Veiligheid en privacy voorop | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 3 | **Duurzaam** — Toekomstbestendig, verspilling vermijden | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 4 | **Continu** — Continuiteit van zorg borgen | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 5 | **Mens centraal** — De mens staat centraal | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 6 | **Samen** — Afstemming met stakeholders | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 7 | **Gestandaardiseerd** — Open standaarden en best practices | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 8 | **Flexibel** — Modulair, uitbreidbaar, vervangbaar | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 9 | **Eenvoudig** — Eenvoudigste oplossing die aan eisen voldoet | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 10 | **Onder eigenaarschap** — Aangewezen eigenaren | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 11 | **Datagedreven** — Gestructureerd voor hergebruik | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-| 12 | **Innovatief** — Innovatie actief nastreven | [Voldoet | Deels | Niet | N.v.t.] | [toelichting] |
-
-**Samenvatting principetoets:** [X van 12 voldoet, Y deels, Z niet]
+{% for p in principetoets %}
+| {{ loop.index }} | **{{ p.name }}** — {{ p.description }} | {{ p.assessment }} | {{ p.definition }} |
+{% endfor %}
 
 ---
 
-## 6. Domeinbeoordelingen / Domain Assessments
+## 4. Domeinbeoordelingen / Domain Assessments
 
-Per persona die door `selectRelevant()` is geselecteerd voor dit voorstel.
+{{ persona_findings_formatted }}
 
-### 6.1 [Persona naam] — [Rol]
-
-**Beoordeling / Rating:** [Akkoord | Voorwaardelijk | Bezorgd | Blokkade]
-
-**Bevindingen / Findings:**
-- [bevinding 1]
-- [bevinding 2]
-
-**Voorwaarden / Conditions:**
-- [voorwaarde indien voorwaardelijk]
+**Vetorecht uitgeoefend:** {{ veto_exercised }}
+**Escalatie:** {{ escalation }}
+**FG-bepaling:** {{ fg_determination }}
 
 ---
 
-### 6.2 [Persona naam] — [Rol]
+## 5. BIV-classificatie / BIV Classification
 
-**Beoordeling / Rating:** [Akkoord | Voorwaardelijk | Bezorgd | Blokkade]
+| Dimensie | Score | Toelichting |
+|----------|-------|-------------|
+| **B** — Beschikbaarheid | {{ biv_b }} | {% if biv_b >= 3 %}Klinische criticaliteit — hoge beschikbaarheid vereist{% elif biv_b >= 2 %}Belangrijk —impact bij uitval{% else %}Standaard{% endif %} |
+| **I** — Integriteit | {{ biv_i }} | {% if biv_i >= 3 %}Levenskritieke data — fouten kunnen patiëntschaad veroorzaken{% elif biv_i >= 2 %}Belangrijke data — fouten hebben impact{% else %}Standaard{% endif %} |
+| **V** — Vertrouwelijkheid | {{ biv_v }} | {% if biv_v >= 3 %}Bijzondere persoonsgegevens — AVG Art. 9{% elif biv_v >= 2 %}Persoonsgegevens — AVG van toepassing{% else %}Standaard{% endif %} |
 
-**Bevindingen / Findings:**
-- [bevinding 1]
+**RPO:** {{ biv_rpo }}
+**RTO:** {{ biv_rto }}
 
-**Voorwaarden / Conditions:**
-- [voorwaarde indien voorwaardelijk]
-
----
-
-*Herhaal voor alle geselecteerde persona's. Gebruik het volgende format per persona:*
-
-<!--
-Beschikbare persona's en hun focus:
-
-| Persona | Naam | Focus |
-|---------|------|-------|
-| CIO | CIO | Budget, strategie, TCO, schaduw-IT |
-| CMIO | CMIO | Patiëntveiligheid, klinische workflows, HL7/FHIR |
-| Chief Architect | Marcus | ZiRA coherentie, principetoets, architectuurschuld |
-| Business Architecture | Sophie | Strategie-alignment, bedrijfsfuncties, diensten |
-| Application Architecture | Thomas | Portfoliooverlap, tech radar, build/buy/SaaS |
-| Integration Architecture | Lena | API-standaarden, koppelingsrisico, datastromen |
-| Technology & Infrastructure | Jan | Hosting, DR, RPO/RTO, operationele gereedheid |
-| Data & AI Architecture | Aisha | Dataclassificatie, AVG/DPIA, datakwaliteit |
-| Security Architecture | Victor | STRIDE, zero trust, IAM, encryptie — VETORECHT |
-| CISO | CISO | Strategisch beveiligingsrisico, SOC-capaciteit |
-| Information Security Officer | ISO-Officer | NEN 7510 ISMS, patchcycli, monitoring |
-| Risk & Compliance | Nadia | AVG, NEN 7510/7512/7513, NIS2, AIVG — ESCALATIE |
-| FG / DPO | FG-DPO | Verwerkingsgrondslag, DPIA, rechten betrokkenen — ONAFHANKELIJK |
-| Privacy Officer | PO | Privacy by design, dataminimalisatie, verwerkingsregister |
-| Red Team | Raven | Verborgen aannames, faalscenario's, groepsdenken |
--->
-
-### Beoordelingsoverzicht / Assessment Overview
-
-| Persona | Naam | Rating | Bijzondere bevoegdheid |
-|---------|------|--------|------------------------|
-| [rol] | [naam] | [Akkoord / Voorwaardelijk / Bezorgd / Blokkade] | [Veto / Escalatie / Onafhankelijk / -] |
-
-**Blokkades:** [Geen | Beschrijving van blokkades met persona]
-**Vetorecht uitgeoefend:** [Nee | Ja — door Victor: reden]
-**Escalatie:** [Nee | Ja — door Nadia: reden]
-**FG-bepaling:** [N.v.t. | Concept — bevestiging door FG vereist]
+*Zie BIA/BIV-rapport voor volledige bedrijfsimpactanalyse indien B, I of V = 3.*
 
 ---
 
-## 7. BIV-classificatie / BIV Classification
+## 6. Risicoregister / Risk Register
 
-| Dimensie | Score | Bepaald door | Toelichting |
-|----------|-------|--------------|-------------|
-| **B** — Beschikbaarheid | [1 / 2 / 3] | [persona's] | [toelichting] |
-| **I** — Integriteit | [1 / 2 / 3] | [persona's] | [toelichting] |
-| **V** — Vertrouwelijkheid | [1 / 2 / 3] | [persona's] | [toelichting] |
-
-**RPO:** [Recovery Point Objective]
-**RTO:** [Recovery Time Objective]
-
-*Zie [BIA/BIV-rapport](bia-biv.md) voor volledige bedrijfsimpactanalyse indien B, I of V = 3.*
+{{ risk_register }}
 
 ---
 
-## 8. Risicoregister / Risk Register
+## 7. Red Team Bevindingen / Red Team Findings
 
-| # | Risico | Kans | Impact | Score | Bron (persona) | Mitigatie |
-|---|--------|------|--------|-------|----------------|-----------|
-| R1 | [risicobeschrijving] | [L/M/H] | [L/M/H] | [LxI] | [persona naam] | [mitigerende maatregel] |
-| R2 | [risicobeschrijving] | [L/M/H] | [L/M/H] | [LxI] | [persona naam] | [mitigerende maatregel] |
+{% set redteam = persona_findings | selectattr('perspective_id', 'equalto', 'redteam') | list %}
+{% if redteam %}
+{% for rt in redteam %}
+### Verborgen Aannames / Hidden Assumptions
+{% if rt.hidden_concern %}- {{ rt.hidden_concern }}{% endif %}
+{% if rt.strongest_objection %}- {{ rt.strongest_objection }}{% endif %}
 
----
-
-## 9. Red Team Bevindingen / Red Team Findings
-
-*Alleen bij high/critical impact voorstellen. Pre-mortem analyse door Raven.*
-
-### 9.1 Verborgen Aannames / Hidden Assumptions
-- [aanname die niet expliciet is getoetst]
-
-### 9.2 Faalscenario's / Failure Scenarios
-- [scenario: wat als X faalt?]
-
-### 9.3 Groepsdenken / Groupthink Indicators
-- [patronen in de domeinbeoordelingen die wijzen op blinde vlekken]
-
-### 9.4 Pre-mortem
-[Het is 12 maanden later en dit voorstel is mislukt. Wat is er gebeurd?]
+### Pre-mortem
+{% for c in rt.conditions %}- {{ c }}
+{% endfor %}
+{% endfor %}
+{% else %}
+*Geen Red Team bevindingen — niet geselecteerd voor dit impactniveau.*
+{% endif %}
 
 ---
 
-## 10. Voorwaarden voor Goedkeuring / Conditions for Approval
+## 8. Voorwaarden voor Goedkeuring / Conditions for Approval
 
-| # | Voorwaarde | Bron (persona) | Eigenaar | Deadline | Status |
-|---|-----------|----------------|----------|----------|--------|
-| C1 | [voorwaarde] | [persona naam] | [eigenaar] | [datum] | [Open] |
-| C2 | [voorwaarde] | [persona naam] | [eigenaar] | [datum] | [Open] |
+{{ conditions_table }}
 
 ---
 
-## 11. Open Vragen voor het Board / Open Questions for the Board
+## 9. Open Vragen voor het Board / Open Questions for the Board
 
 *Zaken die menselijk oordeel vereisen en niet door Preflight beantwoord kunnen worden.*
+
+[ARCHITECT INPUT NEEDED: Formuleer de strategische, budgettaire of organisatorische vragen die het board moet beantwoorden.]
 
 1. [vraag die politieke, strategische of budgettaire context vereist]
 2. [vraag over organisatorische bereidheid of prioritering]
@@ -275,30 +121,16 @@ Beschikbare persona's en hun focus:
 
 ---
 
-## 12. Gerelateerde Beoordelingen / Related Assessments
+## 10. Bijlagen / Appendices
 
-| Assessment | Datum | Besluit | Relevantie |
-|-----------|-------|---------|------------|
-| [eerder voorstel] | [datum] | [besluit] | [waarom relevant] |
-
----
-
-## 13. Architectuurschuld / Architecture Debt
-
-| # | Type | Beschrijving | Archi-element | Impact |
-|---|------|-------------|---------------|--------|
-| [nieuw/bestaand] | [technisch / integratie / beveiliging / compliance / portfolio] | [beschrijving] | [element-id] | [beschrijving] |
-
----
-
-## 14. Bijlagen / Appendices
-
-- [ ] ADR(s) — [link naar architectuurbesluit(en)](adr.md)
-- [ ] BIA/BIV-rapport — [link naar bedrijfsimpactanalyse](bia-biv.md)
+- [ ] ADR(s)
+- [ ] BIA/BIV-rapport
 - [ ] DPIA — indien van toepassing
 - [ ] Leveranciersbeoordeling — indien nieuw product/leverancier
 - [ ] Integratieontwerp — indien systeemkoppeling
 - [ ] Klinisch impactoverzicht — indien klinisch systeem
+- [ ] Security Assessment — indien security concern/block
+- [ ] EU AI Act — indien AI/ML systeem
 
 ---
 
@@ -306,9 +138,4 @@ Beschikbare persona's en hun focus:
 
 | Versie | Datum | Auteur | Wijziging |
 |--------|-------|--------|-----------|
-| 0.1 | [datum] | Preflight | Initieel concept gegenereerd |
-| [1.0] | [datum] | [architect] | [beschrijving wijziging] |
-
----
-
-*Preflight doet het huiswerk. De architect voegt oordeel toe. Het board beslist.*
+| 0.1 | {{ date }} | Preflight | Initieel concept gegenereerd |

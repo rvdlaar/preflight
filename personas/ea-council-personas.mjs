@@ -278,6 +278,50 @@ export const PERSPECTIVES = [
 ];
 
 // ---------------------------------------------------------------------------
+// Persona → Perspective ID mapping
+// Manual mapping — explicit, no array-index dependency, verifiable at load time.
+// If you add a persona, add it here too. The integrity check below will catch omissions.
+// ---------------------------------------------------------------------------
+const PERSONA_TO_PERSPECTIVE_ID = {
+  CIO: 'cio',
+  CMIO: 'cmio',
+  Marcus: 'chief',
+  Sophie: 'business',
+  Joris: 'process',
+  Thomas: 'application',
+  Lena: 'integration',
+  Jan: 'infrastructure',
+  Aisha: 'data',
+  Erik: 'manufacturing',
+  Petra: 'rnd',
+  Victor: 'security',
+  Nadia: 'risk',
+  Raven: 'redteam',
+  CISO: 'ciso',
+  'ISO-Officer': 'iso-officer',
+  'FG-DPO': 'fg-dpo',
+  PO: 'privacy',
+  Marco: 'solution',
+  Daan: 'information',
+  Ruben: 'network',
+  Femke: 'portfolio',
+};
+
+// Integrity check: every persona must map to an existing perspective
+const _perspectiveIds = new Set(PERSPECTIVES.map(p => p.id));
+for (const [name, pid] of Object.entries(PERSONA_TO_PERSPECTIVE_ID)) {
+  if (!_perspectiveIds.has(pid)) {
+    throw new Error(`PERSONA_TO_PERSPECTIVE_ID: ${name} maps to missing perspective "${pid}"`);
+  }
+}
+const _mappedPersonaNames = new Set(Object.keys(PERSONA_TO_PERSPECTIVE_ID));
+for (const p of PERSONAS) {
+  if (!_mappedPersonaNames.has(p.name)) {
+    throw new Error(`PERSONA_TO_PERSPECTIVE_ID: missing mapping for persona "${p.name}"`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Routing — select relevant personas/perspectives per request type
 // Not every request needs 17 opinions. A SaaS tool evaluation doesn't need
 // Manufacturing & OT. A factory floor sensor project doesn't need CMIO.
@@ -318,6 +362,10 @@ const CORE_ALWAYS = ['chief', 'security', 'risk', 'fg-dpo'];
  * @returns {Array} — filtered subset of the collection
  */
 export function selectRelevant(collection, requestType, opts = {}) {
+  if (!Array.isArray(collection) || !collection.length) {
+    return [];
+  }
+
   const { includeRedTeam = false } = opts;
   const isPersona = collection[0]?.incentives !== undefined;
   const idField = isPersona ? 'name' : 'id';
@@ -331,9 +379,8 @@ export function selectRelevant(collection, requestType, opts = {}) {
 
   return collection.filter(item => {
     if (isPersona) {
-      // Match persona by finding its corresponding perspective id
-      const idx = PERSONAS.indexOf(item);
-      return idx >= 0 && idSet.has(PERSPECTIVES[idx]?.id);
+      const perspectiveId = PERSONA_TO_PERSPECTIVE_ID[item.name];
+      return perspectiveId && idSet.has(perspectiveId);
     }
     return idSet.has(item[idField]);
   });

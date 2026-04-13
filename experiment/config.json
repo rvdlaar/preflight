@@ -1,0 +1,49 @@
+{
+  "pdf": {
+    "engine": "pymupdf",
+    "extract_tables": true,
+    "table_format": "markdown",
+    "extract_images": false,
+    "image_vision_model": "",
+    "page_timeout_seconds": 30,
+    "marker_use_llm": false,
+    "marker_llm_model": ""
+  },
+  "chunking": {
+    "child_chunk_size": 512,
+    "child_overlap": 77,
+    "parent_chunk_size": 2048,
+    "parent_overlap": 200,
+    "strategy": "section_aware",
+    "preserve_tables": true,
+    "table_row_per_chunk": true,
+    "regulatory_chunk_size": 512,
+    "vendor_chunk_size": 1024,
+    "policy_chunk_size": 768
+  },
+  "embedding": {
+    "model": "intfloat/multilingual-e5-small",
+    "dimensions": 384,
+    "batch_size": 32,
+    "router": "local",
+    "content_type_routing": true
+  },
+  "retrieval": {
+    "alpha": 0.7,
+    "top_k": 15,
+    "reranker": "identity",
+    "reranker_model": "",
+    "parent_expansion": true,
+    "parent_max_tokens": 2048,
+    "persona_augmentation": true,
+    "hyde_enabled": false,
+    "min_score": 0.1
+  },
+  "versioning": {
+    "default_tag": "latest",
+    "conflict_policy": "newer_wins",
+    "warn_on_conflict": true,
+    "filter_by_version": false,
+    "requested_version": ""
+  }
+}

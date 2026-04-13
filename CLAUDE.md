@@ -17,9 +17,12 @@ The design is split across multiple documents:
 | `PREFLIGHT.md` | Product document — what it does, for whom, why, lifecycle | CIO, CMIO, board, architects |
 | `ARCHITECTURE.md` | Technical architecture — pipeline, LLM routing, embedding, parsing, auth, audit | Developers, technical architects |
 | `DIGITAL-PATHOLOGY.md` | End-to-end worked example (Sysmex) | Everyone — the demo |
+| `README.md` | Quick start, CLI commands, project structure, configuration | Developers, new contributors |
 | `ZiRA-Reference.md` | ZiRA reference architecture documentation | Domain context |
-| `personas/ea-council-personas.mjs` | 15 core + 2 optional MiroFish persona definitions | Runtime, prompt engineering |
-| `templates/*.md` | Output product templates (PSA, ADR, BIA, DPIA, etc.) | Product generation |
+| `personas/ea-council-personas.mjs` | 20 core + 2 optional MiroFish persona definitions (22 total) | Runtime, prompt engineering |
+| `templates/*.md` | 16 Jinja2 output product templates (PSA, ADR, BIA, DPIA, etc.) — bilingual NL/EN | Product generation |
+| `src/preflight/` | Python backend — CLI, API, pipeline, LLM, parsing, embedding, auth, synthesis | Implementation |
+| `synthesis/*.mjs` | Original JavaScript MiroFish synthesis modules | Reference / porting source |
 | `PROMPTS-v2.md` | Backlog of improvement prompts from MiroFish panel review | Development planning |
 | `DOCUMENTATION-PLAN.md` | How prompts map to document sections | Development planning |
 
@@ -32,7 +35,7 @@ The design is split across multiple documents:
 2. **Retrieve** — per-persona RAG (not global), scoped by each persona's `domain` keywords
 3. **Assess** — Fast mode (batched PERSPECTIVES, single LLM call) or Deep mode (`simulatePanel()`, per-persona calls + interaction rounds)
 4. **Challenge** — authority personas act: Security VETO, Risk ESCALATION, FG/DPO DETERMINATION (independent), CMIO PATIENT SAFETY floor, Red Team pre-mortem
-5. **Output** — persona-attributed findings → 9 architecture products, bilingual NL/EN
+5. **Output** — persona-attributed findings → 15 architecture products, bilingual NL/EN
 
 ### Key Design Decisions
 
@@ -40,7 +43,7 @@ The design is split across multiple documents:
 - **Hard triage floors**: clinical-system cannot be fast-tracked; patient-data always activates FG-DPO
 - **20 core personas** + 2 optional extensions (Erik/Manufacturing, Petra/R&D) = 22 total
 - **Phase 1 starts simple**: single LLM, pgvector (not Milvus), ArchiMate parser + batched assessment + Markdown PSA output
-- **15 output products** (PSA, ADR, Clinical Impact, Process Impact, Vendor, DPIA, BIA/BIV, Integration Design, Network Impact, Security, NFR Spec, EU AI Act, Operational Readiness, Roadmap Impact, Tech Radar)
+- **16 output products** (PSA, ADR, Clinical Impact, Process Impact, Vendor, DPIA, BIA/BIV, Integration Design, Network Impact, Security, NFR Spec, EU AI Act, Operational Readiness, Roadmap Impact, Tech Radar, Decommission Checklist)
 - **Kill metric**: if false fast-track rate >10% after 3 months shadow mode, stop and reassess
 
 ### Tech Stack (planned)

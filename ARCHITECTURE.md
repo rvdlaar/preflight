@@ -541,21 +541,15 @@ Full pipeline (Steps 0-5) on reference scenarios. Run on every PR.
 ## Repository Structure
 
 ```
-preflight/
+EA-Council/
 ├── PREFLIGHT.md                       # Product document
 ├── ARCHITECTURE.md                    # This document
 ├── DIGITAL-PATHOLOGY.md               # Worked example
+├── README.md                          # Quick start, CLI commands, project overview
+├── CLAUDE.md                          # Claude Code guidance
 ├── personas/
-│   ├── ea_council.py                  # 22 MiroFish personas (ported from .mjs)
-│   ├── routing.py                     # selectRelevant() + ROUTING table
-│   └── enrichment.py                  # injectLandscapeContext()
-├── knowledge/                         # RAG corpus (markdown → vector store)
-│   ├── zira/
-│   ├── regulatory/
-│   ├── procurement/
-│   ├── hospital/
-│   └── glossary/
-├── templates/                         # Architecture product templates (NL/EN)
+│   └── ea-council-personas.mjs        # 22 MiroFish personas + selectRelevant() + routing
+├── templates/                         # Architecture product templates (Jinja2, NL/EN)
 │   ├── psa.md
 │   ├── adr.md
 │   ├── clinical-impact.md
@@ -570,70 +564,43 @@ preflight/
 │   ├── eu-ai-act.md
 │   ├── operational-readiness.md
 │   ├── roadmap-impact.md
-│   └── tech-radar-update.md
-├── src/
-│   ├── server.py                      # FastAPI service
-│   ├── pipeline.py                    # Six-step orchestration
-│   ├── ingest.py                      # Step 0
-│   ├── classify.py                    # Step 1
-│   ├── retrieve.py                    # Step 2
-│   ├── assess.py                      # Step 3
-│   ├── simulate.py                    # simulatePanel()
-│   ├── challenge.py                   # Step 4
-│   ├── output.py                      # Step 5
-│   ├── products/                      # Architecture product generators
-│   ├── auth/
-│   │   ├── authn.py                   # Entra ID OIDC
-│   │   ├── authz.py                   # OAuth 2.1 + RBAC/ABAC
-│   │   └── policies.py               # ABAC policies
-│   ├── audit/
-│   │   ├── trail.py                   # Hash-chained audit log
-│   │   ├── siem.py                    # SIEM export
-│   │   └── compliance.py              # NEN 7513 / NIS2 reports
-│   ├── parsing/
-│   │   ├── router.py
-│   │   ├── markitdown.py
-│   │   ├── pymupdf.py
-│   │   ├── llamaparse.py
-│   │   ├── azure_doc.py
-│   │   └── unstructured.py
-│   ├── embedding/
-│   │   ├── pipeline.py
-│   │   ├── chunkers/
-│   │   │   ├── archimate.py
-│   │   │   ├── hierarchical.py
-│   │   │   ├── contextual.py
-│   │   │   └── tabular.py
-│   │   └── models/
-│   │       ├── voyage.py
-│   │       ├── bge.py
-│   │       └── gemini.py
-│   ├── integrations/
-│   │   ├── archimate.py               # Archi .archimate XML parser
-│   │   ├── topdesk.py                 # TOPdesk REST
-│   │   ├── msgraph.py                 # Microsoft Graph
-│   │   └── leanix.py                  # LeanIX API
-│   └── llm/
-│       ├── router.py                  # LLMRouter
-│       ├── nim.py                     # NVIDIA NIM client
-│       └── ollama.py                  # Ollama client (local dev)
-├── frontend/                          # Next.js + shadcn/ui + Tailwind
-│   └── src/
-│       ├── app/
-│       │   ├── [locale]/              # NL/EN bilingual routes
-│       │   ├── intake/                # Self-service intake portal
-│       │   ├── assessments/           # Assessment list, detail, diff
-│       │   ├── board/                 # Board prep packs, decisions
-│       │   ├── conditions/            # Condition tracking
-│       │   ├── vendors/               # Vendor intelligence
-│       │   ├── debt/                  # Architecture debt register
-│       │   ├── compliance/            # Audit trail, NEN 7513
-│       │   ├── query/                 # Natural language query
-│       │   └── dashboard/             # Overview, metrics, BIV distribution
-│       └── components/
-├── tests/
-│   └── scenarios/                     # Reference proposals
-└── assessments/                       # Dogfood: Preflight assessing itself
+│   ├── tech-radar-update.md
+│   └── decommission-checklist.md
+├── src/preflight/                     # Python backend (package-based)
+│   ├── api/                           # FastAPI REST API
+│   ├── archimate/                     # ArchiMate XML parser
+│   ├── auth/                          # AuthN (Entra ID), AuthZ (RBAC+ABAC), Audit, Guardrails
+│   ├── citation/                      # Citation processor (verify/link/remove)
+│   ├── classify/                      # Heuristic + LLM classification
+│   ├── cli/                           # Click CLI (assess, full-assess, ingest, quick-scan)
+│   ├── db/                            # SQLAlchemy models, session, DDL
+│   ├── embedding/                     # Embedding router, contextual retrieval, pipeline
+│   ├── guardrails/                    # NeMo Guardrails + Colang config
+│   ├── integrations/                  # TOPdesk, LeanIX, Graph connectors
+│   ├── llm/                           # LLM client (Ollama, NIM), router, parser
+│   ├── model/                         # Domain models
+│   ├── models/                        # SQLAlchemy ORM models
+│   ├── parsing/                       # Document parsers (PDF, DOCX, MD, .archimate)
+│   ├── pipeline/                      # Orchestrator, pipeline, quickscan
+│   ├── retrieval/                     # pgvector store, enrichment, reranker
+│   └── synthesis/                     # Document generation (Jinja2), diagrams
+├── synthesis/                         # JavaScript synthesis modules (original MiroFish)
+│   ├── archimate.mjs                  # ArchiMate XML synthesis
+│   ├── clarification.mjs             # Clarification logic
+│   ├── diagrams.mjs                  # Diagram generation
+│   ├── engine.mjs                    # Core synthesis engine
+│   └── pipeline.mjs                  # Pipeline orchestration
+├── scripts/                           # Utility scripts
+│   ├── seed.py                        # Database seeding
+│   └── init-db.sql                    # PostgreSQL initialization (pgvector)
+├── alembic/                           # Database migrations
+├── tests/                             # pytest test suite
+├── experiment/                        # QA ground truth, experiment configs
+├── novius/                            # NAR reference architecture research
+├── docker-compose.yml                 # PostgreSQL + pgvector
+├── pyproject.toml                     # Python project config (deps, CLI entry)
+├── Makefile                           # Dev tasks (install, test, lint, migrate, seed)
+└── preflight                          # Shell wrapper for CLI
 ```
 
 ---

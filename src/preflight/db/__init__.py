@@ -1,0 +1,65 @@
+"""
+Preflight database — SQLAlchemy models, session, and initialization.
+"""
+
+from preflight.db.models import (
+    Base,
+    User,
+    Request,
+    Assessment,
+    PersonaFinding,
+    AuthorityAction,
+    Condition,
+    AuditLog,
+    BoardDecision,
+    BoardOverride,
+    Clarification,
+    PersonaVersion,
+    Retrospective,
+    PersonaCalibration,
+    KnowledgeSource,
+    KnowledgeChunkModel,
+    Citation,
+    Vendor,
+    System,
+    SystemRelationship,
+    ArchitectureDebt,
+    compute_audit_hash,
+)
+from preflight.db.session import (
+    get_async_engine,
+    get_async_session_factory,
+    init_db,
+    init_db_sync,
+)
+from preflight.db.schema import FULL_SCHEMA
+
+__all__ = [
+    "Base",
+    "User",
+    "Request",
+    "Assessment",
+    "PersonaFinding",
+    "AuthorityAction",
+    "Condition",
+    "AuditLog",
+    "BoardDecision",
+    "BoardOverride",
+    "Clarification",
+    "PersonaVersion",
+    "Retrospective",
+    "PersonaCalibration",
+    "KnowledgeSource",
+    "KnowledgeChunkModel",
+    "Citation",
+    "Vendor",
+    "System",
+    "SystemRelationship",
+    "ArchitectureDebt",
+    "compute_audit_hash",
+    "get_async_engine",
+    "get_async_session_factory",
+    "init_db",
+    "init_db_sync",
+    "FULL_SCHEMA",
+]

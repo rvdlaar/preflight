@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: preflight-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: preflight
+      POSTGRES_USER: preflight
+      POSTGRES_PASSWORD: preflight_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preflight -d preflight"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

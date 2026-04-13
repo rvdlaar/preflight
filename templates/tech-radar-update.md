@@ -1,64 +1,72 @@
-# Technology Radar Update / Technologieradar-wijziging
+# {% if language == "nl" %}Technologieradar-wijziging{% else %}Technology Radar Update{% endif %}
 
-> Preflight Template — EA-raad / EA Board
-> Datum / Date: {{DATUM}}
-> Opgesteld door / Prepared by: {{AUTEUR}}
-> Versie / Version: {{VERSIE}}
+**{% if language == "nl" %}Voorstel{% else %}Proposal{% endif %}:** {{ proposal_name }}
+**{% if language == "nl" %}Datum{% else %}Date{% endif %}:** {{ date }}
+**{% if language == "nl" %}Versie{% else %}Version{% endif %}:** {{ version }}
+
+[§P:application], [§P:enterprise]
 
 ---
 
-## Technologie / Technology
+## {% if language == "nl" %}Technologie{% else %}Technology{% endif %}
 
-| Veld / Field | Waarde / Value |
+| {% if language == "nl" %}Veld{% else %}Field{% endif %} | {% if language == "nl" %}Waarde{% else %}Value{% endif %} |
 |---|---|
-| Naam / Name | {{TECHNOLOGIE}} |
-| Categorie / Category | Technieken / Platforms / Tools / Talen & Frameworks |
-| Huidige ring / Current ring | ADOPT / TRIAL / ASSESS / HOLD / Nieuw |
-| Aanbevolen ring / Recommended ring | ADOPT / TRIAL / ASSESS / HOLD |
-| Wijzigingsrichting / Movement | Inwaarts / Uitwaarts / Ongewijzigd |
+| {% if language == "nl" %}Naam{% else %}Name{% endif %} | {{ tech_radar_name | default(proposal_name) }} |
+| {% if language == "nl" %}Categorie{% else %}Category{% endif %} | {{ tech_radar_category | default("[ARCHITECT INPUT NEEDED]") }} |
+| {% if language == "nl" %}Huidige ring{% else %}Current ring{% endif %} | {{ tech_radar_current_ring | default("Nieuw") }} |
+| {% if language == "nl" %}Aanbevolen ring{% else %}Recommended ring{% endif %} | {{ tech_radar_status | default("[ARCHITECT INPUT NEEDED]") }} |
 
 ---
 
 ## Rationale
 
-{{RATIONALE — Waarom deze positie? Verwijs naar concrete ervaringen, evaluaties, marktanalyse, of incidenten. Kort en feitelijk.}}
+{{ tech_radar_rationale | default("[ARCHITECT INPUT NEEDED]") }}
 
 ---
 
-## Voorwaarden voor Ringverandering / Conditions for Ring Movement
+## {% if language == "nl" %}Voorwaarden voor Ringverandering{% else %}Conditions for Ring Movement{% endif %}
 
-| Richting / Direction | Voorwaarde / Condition |
+{% for cond in tech_radar_conditions %}
+- {{ cond }}
+{% endfor %}
+{% if not tech_radar_conditions %}
+- [ARCHITECT INPUT NEEDED]
+{% endif %}
+
+---
+
+## {% if language == "nl" %}Gerelateerde Items{% else %}Related Landscape Items{% endif %}
+
+{% for app in existing_apps %}
+- {{ app.name | default(app) }} {% if app.lifecycle %}({{ app.lifecycle }}){% endif %}
+{% endfor %}
+{% if not existing_apps %}
+- [ARCHITECT INPUT NEEDED]
+{% endif %}
+
+[§K:archimate]
+
+---
+
+## {% if language == "nl" %}Risico's{% else %}Risks{% endif %}
+
+{% for pf in persona_findings %}{% if pf.rating in ("concern", "block") %}
+- {{ pf.findings[0] | default("") }} [§P:{{ pf.name }}]
+{% endif %}{% endfor %}
+{% if not persona_findings %}
+- [ARCHITECT INPUT NEEDED]
+{% endif %}
+
+---
+
+## {% if language == "nl" %}Besluit EA-raad{% else %}EA Board Decision{% endif %}
+
+| {% if language == "nl" %}Veld{% else %}Field{% endif %} | {% if language == "nl" %}Waarde{% else %}Value{% endif %} |
 |---|---|
-| Naar ADOPT | {{bijv. succesvolle pilot afgerond, productie-ervaring >= 6 maanden, SLA bewezen}} |
-| Naar HOLD | {{bijv. end-of-life aangekondigd, beveiligingsincident, beter alternatief beschikbaar}} |
+| {% if language == "nl" %}Besluit{% else %}Decision{% endif %} | [BOARD DECISION NEEDED] |
+| {% if language == "nl" %}Voorwaarden{% else %}Conditions{% endif %} | {{ conditions_table | default("[—]") }} |
 
 ---
 
-## Gerelateerde Items in het Landschap / Related Landscape Items
-
-| Item | Relatie | Archi-referentie |
-|---|---|---|
-| {{bijv. Cloverleaf}} | Vervangt / Complementeert / Concurreert met | {{ARCHIMATE_ID}} |
-| {{bijv. JiveX}} | {{RELATIE}} | {{ARCHIMATE_ID}} |
-
----
-
-## Risico's en Aandachtspunten / Risks & Considerations
-
-- {{RISICO_1}}
-- {{RISICO_2}}
-- {{RISICO_3}}
-
----
-
-## Besluit EA-raad / EA Board Decision
-
-| Veld / Field | Waarde / Value |
-|---|---|
-| Besluit / Decision | Akkoord / Akkoord met voorwaarden / Afgewezen / Uitgesteld |
-| Voorwaarden / Conditions | {{VOORWAARDEN}} |
-| Datum besluit / Decision date | {{DATUM}} |
-
----
-
-*Template versie 1.0 — Preflight EA Assessment Tool*
+*{% if language == "nl" %}Preflight doet het huiswerk. De architect voegt oordeel toe. Het board beslist.{% else %}Preflight does the homework. The architect adds judgment. The board decides.{% endif %}*
