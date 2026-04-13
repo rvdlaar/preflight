@@ -67,6 +67,12 @@ from preflight.pipeline.pipeline import (
     generate_verwerkingsregister_draft,
     process_authority_actions,
 )
+from preflight.pipeline.authority import (
+    AuthorityEnforcementResult,
+    enforce_authority,
+    apply_authority_to_findings,
+    generate_authority_summary,
+)
 from preflight.retrieval.retrieve import (
     PersonaContext,
     build_retrieved_context_for_prompt,
@@ -76,6 +82,7 @@ from preflight.retrieval.store import VectorStoreClient
 from preflight.model.types import ArchiMateModel
 from preflight.synthesis.diagrams import generate_diagrams
 from preflight.synthesis.docgen import build_document_context, render_all_documents
+from preflight.synthesis.product_extractor import extract_all_product_data
 
 # ---------------------------------------------------------------------------
 # Pipeline result
@@ -115,6 +122,7 @@ class PipelineResult:
     citation_mapping: CitationMapping = field(default_factory=CitationMapping)
     guard_flags: list[str] = field(default_factory=list)
     archimate_model: ArchiMateModel | None = None
+    authority_enforcement: AuthorityEnforcementResult | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -350,33 +358,103 @@ async def _deep_assess(
             }
 
     # Interaction rounds 2+: each persona sees others' key findings and may revise
+    # Authority personas get the final word; others must acknowledge authority actions
+    AUTHORITY_PERSONAS = {"security", "risk", "fg-dpo", "cmio"}
     current_findings = dict(round1_findings)
     for round_num in range(2, interaction_rounds + 1):
+        triggered_authorities = {
+            pid: f
+            for pid, f in current_findings.items()
+            if pid in AUTHORITY_PERSONAS and f.get("rating") in ("block", "concern")
+        }
+
         other_summary = "\n".join(
             f"- {f.get('name', f['perspective_id'])} ({f.get('rating', 'na')}): "
-            + "; ".join(f.get("findings", [])[:3])
+            + "; ".join(
+                (fl if isinstance(fl, str) else fl.get("finding", ""))
+                for fl in f.get("findings", [])[:3]
+            )
             + (f" [revised: {f.get('revised_rating', '?')}]" if f.get("revised_rating") else "")
-            for f in current_findings.values()
+            + (
+                " ⚠️ AUTHORITY"
+                if pid in AUTHORITY_PERSONAS and f.get("rating") in ("block", "concern")
+                else ""
+            )
+            for pid, f in current_findings.items()
             if f.get("findings")
+        )
+
+        authority_warnings = "\n".join(
+            f"⚠️ **{triggered_authorities[pid].get('name', pid)}** "
+            f"({triggered_authorities[pid].get('rating')}) — "
+            + "; ".join(
+                (fl if isinstance(fl, str) else fl.get("finding", ""))
+                for fl in triggered_authorities[pid].get("findings", [])[:3]
+            )
+            for pid in sorted(triggered_authorities)
         )
 
         for pid, cf in current_findings.items():
             persona = persona_map.get(pid, {"id": pid, "label": pid, "role": pid})
             current_rating = cf.get("revised_rating", cf.get("rating", "na"))
             current_findings_list = cf.get("revised_findings", cf.get("findings", []))
-            revise_system = (
-                f"You are {persona.get('label', pid)}, {persona.get('role', pid)} in the EA council. "
-                f"You assessed this proposal as '{current_rating}'. "
-                "Other board members have shared their findings. "
-                "Review their key points and decide if you want to revise your assessment."
+            findings_str = "; ".join(
+                (fl if isinstance(fl, str) else fl.get("finding", ""))
+                for fl in current_findings_list[:3]
             )
+
+            is_authority = pid in AUTHORITY_PERSONAS
+            if is_authority and current_rating in ("block", "concern"):
+                revise_system = (
+                    f"You are {persona.get('label', pid)}, {persona.get('role', pid)}. "
+                    f"You hold authority on this council. Your current rating is '{current_rating}'. "
+                    "Other board members have shared their perspectives. As an authority holder, "
+                    "review whether their arguments address your concerns sufficiently to revise. "
+                    "Remember: your determination carries structural weight. "
+                    "Only revise if other members have provided substantial new information "
+                    "that directly addresses your domain concerns."
+                )
+            elif is_authority:
+                revise_system = (
+                    f"You are {persona.get('label', pid)}, {persona.get('role', pid)}. "
+                    f"You hold authority on this council. Your current rating is '{current_rating}'. "
+                    "Review other members' findings. If new risks emerge in your domain, "
+                    "you must flag them — your authority means other members defer to your judgment."
+                )
+            else:
+                revise_system = (
+                    f"You are {persona.get('label', pid)}, {persona.get('role', pid)} on the EA council. "
+                    f"Your current rating is '{current_rating}'. "
+                    "Review other board members' findings carefully.\n\n"
+                )
+                if triggered_authorities:
+                    revise_system += (
+                        "⚠️ IMPORTANT — Authority members have raised concerns:\n"
+                        f"{authority_warnings}\n\n"
+                        "Authority actions (VETO, ESCALATION, INDEPENDENT, PATIENT_SAFETY) "
+                        "carry structural weight. You should acknowledge authority findings "
+                        "in your domain and adjust conditions accordingly. "
+                        "You may maintain a different overall rating, but your conditions "
+                        "must account for the authority determinations.\n"
+                    )
+                else:
+                    revise_system += (
+                        "Consider whether other members have raised points that affect your domain. "
+                        "Specifically respond to findings that challenge or support your assessment."
+                    )
+
             revise_user = (
-                f"Proposal: {request}\n\n"
-                f"Your current assessment: {current_rating} — "
-                f"{'; '.join(current_findings_list[:3])}\n\n"
-                f"Other board members' findings:\n{other_summary}\n\n"
-                "Do you revise your rating, findings, or conditions? "
-                "Respond with: RATING | FINDINGS | CONDITIONS | any revisions."
+                f"## Proposal\n{request}\n\n"
+                f"## Your Current Assessment\n"
+                f"Rating: {current_rating}\n"
+                f"Key findings: {findings_str}\n\n"
+                f"## All Board Members' Findings (Round {round_num})\n{other_summary}\n\n"
+                "Provide your revised assessment using the same format:\n"
+                "[MY_RATING]...[/MY_RATING]\n"
+                "[FINDINGS]...[/FINDINGS]\n"
+                "[STRONGEST_OBJECTION]...[/STRONGEST_OBJECTION]\n"
+                "[CONDITIONS]...[/CONDITIONS]\n"
+                "[RATING_CHANGE_TRIGGER]...[/RATING_CHANGE_TRIGGER]"
             )
             opts = CallOpts(temperature=0.2, max_tokens=2048, retries=1)
             try:
@@ -655,6 +733,19 @@ async def run_full_pipeline(
     # Step 4: Authority challenge (built into persona_findings processing)
     result.authority_actions = process_authority_actions(persona_findings)
 
+    # Step 4b: Authority enforcement — mark overall status, mandatory conditions
+    treatment = (
+        result.triage.get("treatment", "standard-review") if result.triage else "standard-review"
+    )
+    authority_enforcement = enforce_authority(
+        persona_findings, result.authority_actions, treatment, request_type
+    )
+    apply_authority_to_findings(persona_findings, authority_enforcement)
+    result.authority_enforcement = authority_enforcement
+    if authority_enforcement.treatment_override:
+        result.triage["treatment"] = authority_enforcement.treatment_override
+        result.triage["reason"] = f"Authority escalation: {result.triage.get('reason', '')}"
+
     # Step 4d: Red Team pre-mortem (Raven reviews other personas' findings)
     has_veto_or_escalation = any(
         a.get("triggered") and a.get("type") in ("VETO", "ESCALATION", "INDEPENDENT")
@@ -748,6 +839,11 @@ async def run_full_pipeline(
     deduplicated = deduplicate_findings(persona_findings)
     result.deduplicated = deduplicated
 
+    authority_summary = (
+        generate_authority_summary(result.authority_enforcement)
+        if result.authority_enforcement
+        else ""
+    )
     docgen_context = build_document_context(
         proposal_name=request,
         request_type=request_type,
@@ -761,12 +857,27 @@ async def run_full_pipeline(
         conditions=result.conditions,
         principetoets=result.principetoets,
         authority_actions=result.authority_actions,
+        authority_summary=authority_summary,
         landscape=landscape_context,
         zira=zira,
         assessment_mode=mode,
         language=language,
         citation_mapping=result.citation_mapping,
     )
+    required_documents = determine_required_documents(request_type, ratings, biv)
+    product_data = extract_all_product_data(
+        persona_findings=persona_findings,
+        biv=biv,
+        classification=result.classification,
+        landscape=landscape_context,
+        request_type=request_type,
+        request=request,
+        principetoets=result.principetoets,
+        biv_controls=result.biv_controls,
+        language=language,
+        required_documents=required_documents,
+    )
+    docgen_context.update(product_data)
     documents = render_all_documents(docgen_context)
     result.documents = documents
 

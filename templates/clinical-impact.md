@@ -50,7 +50,7 @@
 
 | {% if language == "nl" %}Systeem{% else %}System{% endif %} | {% if language == "nl" %}Type koppeling{% else %}Integration type{% endif %} | Impact |
 |---|---|---|
-| Cloverleaf | {{ clinical_cloverleaf_integration | default("[—]") }} | {{ clinical_cloverfleet_impact | default("[—]") }} |
+| Cloverleaf | {{ clinical_cloverleaf_integration | default("[—]") }} | {{ clinical_cloverleaf_impact | default("[—]") }} |
 | JiveX | {{ clinical_jivex_integration | default("[—]") }} | {{ clinical_jivex_impact | default("[—]") }} |
 | EPD/EHR | {{ clinical_ehr_integration | default("[—]") }} | {{ clinical_ehr_impact | default("[—]") }} |
 

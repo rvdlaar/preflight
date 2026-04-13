@@ -164,6 +164,7 @@ def build_document_context(
     conditions: list[dict] | None = None,
     principetoets: dict | list[dict] | None = None,
     authority_actions: list[dict] | None = None,
+    authority_summary: str = "",
     risk_register: str | None = None,
     conditions_table: str | None = None,
     citation_appendix: str | None = None,
@@ -261,6 +262,7 @@ def build_document_context(
         "conditionals_count": len(conditionals),
         "approves_count": len(approves),
         "authority_actions": authority_actions,
+        "authority_summary": authority_summary,
         "veto_exercised": f"Ja — door {', '.join(a.get('persona', 'onbekend') for a in veto_actions)}"
         if veto_actions
         else "Nee",
