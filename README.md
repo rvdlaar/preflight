@@ -104,7 +104,10 @@ src/preflight/
 ├── db/               # SQLAlchemy models, session, DDL schema
 ├── embedding/        # Embedding router, contextual retrieval, pipeline
 ├── integrations/     # TOPdesk, LeanIX, Graph connectors
+├── guardrails/       # NeMo Guardrails + Colang config
 ├── llm/              # LLM client (Ollama, NIM), router, parser
+├── model/            # Domain models, ArchiMate MCP client, reader, merger
+├── models/           # SQLAlchemy ORM models
 ├── parsing/          # Document parsers (PDF, DOCX, MD, .archimate)
 ├── pipeline/          # Orchestrator, pipeline, quickscan
 ├── retrieval/         # pgvector store, enrichment, classify, reranker, retrieve

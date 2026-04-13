@@ -1,5 +1,5 @@
 """
-Preflight ArchiMate model package — types, builder, review, exchange, corrections.
+Preflight ArchiMate model package — types, builder, review, exchange, corrections, archi client.
 """
 
 from preflight.model.types import (
@@ -22,3 +22,6 @@ from preflight.model.builder import build_model
 from preflight.model.exchange import write_exchange_xml, write_exchange_file
 from preflight.model.review import generate_review, generate_corrections_yaml, model_to_mermaid
 from preflight.model.corrections import apply_corrections, load_and_apply
+from preflight.model.archi_client import ArchiMCPClient, MCPToolResult
+from preflight.model.merger import merge_model_to_archi, MergeResult
+from preflight.model.archi_reader import read_archi_landscape, ArchiLandscape, landscape_to_context
