@@ -417,7 +417,7 @@ Ingestion complete.
 
 **What just happened:** The architect pointed Preflight at a folder. Preflight:
 
-1. **Detected file types** and routed each to the right parser (PDF → PyMuPDF, DOCX → MarkItDown, XLSX → tabular chunker)
+1. **Detected file types** and routed each to the right parser (complex PDF → OpenDataLoader-PDF, simple PDF → PyMuPDF, DOCX → MarkItDown, XLSX → tabular chunker)
 2. **Auto-classified** each document by content — regulatory, vendor, hospital policy, board decision, architecture doc
 3. **Tagged persona relevance** — which chunks should Victor see vs. Nadia vs. Thomas
 4. **Indexed everything** for per-persona retrieval

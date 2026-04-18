@@ -45,7 +45,7 @@ Behind each client: NIM endpoint, Ollama, or external API. The pipeline doesn't 
 | Personas | MiroFish (ea-council-personas.mjs) | Drive every pipeline step |
 | Orchestration | Python / FastAPI | Request flow, API layer |
 | Knowledge store | Milvus (Phase 2+) / pgvector (Phase 1) | RAG over policies, principles, standards, tech radar |
-| Embedding | Tiered: Voyage-3-Large, BGE-M3, LlamaParse + Gemini 2.0 | Data-type-specific chunking + embedding |
+| Embedding | Tiered: Voyage-3-Large, BGE-M3, Gemini 2.0 | Data-type-specific chunking + embedding |
 | Guardrails | NeMo Guardrails | Input/output filtering, prompt injection defense |
 | Document parsing | Tiered parsing pipeline | PDF, DOCX, PPTX, XLSX, scanned docs extraction |
 | AuthN | Microsoft Entra ID (OIDC) | SSO via hospital identity provider |
@@ -322,31 +322,39 @@ Document in (PDF/DOCX/PPTX/XLSX/scanned)
     │
     ▼
 ┌──────────────────────────────────────────────────────┐
-│  WORKHORSE: Unstructured.io (self-hosted)             │
-│  General ingestion — all file types, batches,         │
-│  chunking for RAG, maintaining doc hierarchy.         │
-│  Assisted by:                                        │
-│    MarkItDown  — Office docs (DOCX/PPTX/XLSX)        │
-│    PyMuPDF     — Fast PDF text extraction             │
-│    Azure AI    — OCR for scanned docs (hospital Azure)│
+│  PDF PRIMARY: OpenDataLoader-PDF (self-hosted)        │
+│  Tagged-PDF + bounding boxes + tables + OCR + formulas│
+│  100% local processing — no API calls, data never     │
+│  leaves hospital. Apache 2.0. JVM runtime (Java 11+). │
 │                                                      │
-│  SMART: LlamaParse                                    │
-│  AI-powered understanding for complex documents:      │
-│  contracts, regulatory mapping, vendor claim analysis  │
+│  PDF FAST PATH: PyMuPDF                               │
+│  Fast text extraction for simple PDFs.                │
+│                                                      │
+│  OFFICE: MarkItDown                                   │
+│  DOCX / PPTX / XLSX.                                  │
+│                                                      │
+│  GENERAL: Unstructured.io (self-hosted)               │
+│  HTML / email / misc; batch chunking + hierarchy.     │
+│                                                      │
+│  SCANNED: Azure AI Document Intelligence              │
+│  OCR fallback for image-only PDFs (hospital Azure).   │
 └──────────────────────────────────────────────────────┘
 ```
 
-**When Smart mode triggers**: vendor contract analysis, complex technical specs with cross-referenced tables, regulatory mapping, vendor claims vs. facts analysis.
+**Why OpenDataLoader-PDF as PDF primary**: 100% local processing matches NEN 7510 / AVG data-residency constraints; per-element bounding boxes provide source provenance for persona findings (page + coordinates attached to every PSA/ADR claim); tagged-PDF + table + formula extraction covers vendor docs, ZiRA PDFs, and regulatory specs in one tool. Trade-off: JVM dependency in the container (accepted; sidecar container or layered JRE base image).
 
-**Routing logic**: Step 1 classification determines mode. `vendor-selection` with contracts → Smart. Everything else → Workhorse.
+**LlamaParse excluded**: SaaS-only; incompatible with hospital data residency without routing proposals through a third party. Capabilities replaced by OpenDataLoader-PDF (tables, structure) + LLM post-processing for vendor-claim analysis.
 
-**Data residency decisions**: Unstructured.io and PyMuPDF are self-hosted (data stays in hospital). LlamaParse and Azure AI Document Intelligence must be evaluated for data residency. Options: self-host LlamaParse, use Azure within hospital tenant, or exclude for proposals containing patient data. This is a deployment-time configuration, not a design-time decision.
+**Routing logic**: Step 1 classification drives parser selection by file type and complexity. Complex / tagged / table-heavy PDFs → OpenDataLoader. Simple text PDFs → PyMuPDF. Office → MarkItDown. Everything else → Unstructured.io.
+
+**Data residency**: All primary parsers (OpenDataLoader, PyMuPDF, MarkItDown, Unstructured.io) are self-hosted. Azure AI OCR runs inside the hospital Azure tenant. No component ships documents to external SaaS.
 
 **Fallback chain**:
 
 ```
-Workhorse: Unstructured.io → MarkItDown → PyMuPDF → Azure AI
-Smart: LlamaParse → Azure AI + LLM post-processing → Unstructured hi_res + LLM
+PDF:    OpenDataLoader-PDF → PyMuPDF → Azure AI OCR + LLM post-processing
+Office: MarkItDown → Unstructured.io
+Other:  Unstructured.io → Azure AI + LLM post-processing
 ```
 
 No document silently fails. If every tool fails: "⚠ This document could not be parsed. Please provide the content in another format."
@@ -376,7 +384,7 @@ Different data types need different chunking strategies and embedding models.
 | **ArchiMate models** | Object-based (element + relationships) | Voyage-3-Large | Preserves graph structure. "Application X serves Business Function Y via Interface Z" stays together. |
 | **Vendor docs (PDF)** | Hierarchical (parent-child) | BGE-M3 (multilingual) | Sections → subsections → details. Multilingual (NL/EN/DE). |
 | **ZiRA / AIVG / NEN specs** | Contextual enrichment (LLM-prefixed) | Voyage-3-Large | Dense regulatory text. LLM generates context prefix before embedding to ground the vector. |
-| **Excel / tables** | Row-wise Markdown | LlamaParse + Gemini 2.0 | Per-row with column headers repeated. Table-aware context. |
+| **Excel / tables** | Row-wise Markdown | MarkItDown + Gemini 2.0 | Per-row with column headers repeated. Table-aware context. |
 
 **Data residency for embedding models**: Voyage-3-Large and Gemini 2.0 are cloud APIs by default. For proposals containing patient data or sensitive content, embeddings must use self-hosted models or the data must be stripped of identifiable information before embedding. This is a deployment-time configuration.
 

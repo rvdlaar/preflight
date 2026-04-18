@@ -54,7 +54,7 @@ The design is split across multiple documents:
 | LLM | Single model (Ollama or NIM) | Tiered routing (light/strong/frontier) |
 | Vector store | PostgreSQL + pgvector | Milvus (dual collection: dense + sparse) |
 | Embedding | Single model | Voyage-3-Large, BGE-M3, Gemini 2.0 (tiered) |
-| Document parsing | — | Unstructured.io + LlamaParse + MarkItDown, PyMuPDF |
+| Document parsing | — | OpenDataLoader-PDF (PDF primary) + PyMuPDF (fast path) + MarkItDown (Office) + Unstructured.io (general) |
 | Frontend | CLI / Markdown output | Next.js + shadcn/ui + Tailwind |
 | Auth | — | Microsoft Entra ID (OIDC) + OAuth 2.1 RBAC/ABAC |
 | Audit | — | PostgreSQL (append-only, hash-chained) + SIEM |
